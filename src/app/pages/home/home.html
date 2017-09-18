@@ -1,0 +1,70 @@
+<div id="menu" class="menu menu-transition" [ngClass]="{'menu-icon-only': !expanded}">
+  <ul class="nav flex-column white">
+    <li class="nav-item menu-item" (click)="expandOrCollapse()">
+      <div class="menu-item-div" [ngClass]="{'menu-item-div-small': !expanded}">
+        <span class="oi oi-menu"></span>
+      </div>
+      <hr class="hr-divider" />
+    </li>
+  </ul>
+  <div class="profile container-fluid">
+    <div class="row">
+      <div class="col-lg-4 col-md-4 col-sm-5 col-6">
+        <img src="../../../assets/images/user.png" class="rounded-circle profileImageLarge trans" [ngClass]="{'profileImageSmall': !expanded}" />
+      </div>
+      <div class="col-lg-8 col-md-8 col-sm-7 col-6 white" [ngClass]="{'hide': !expanded}">
+        <b>Sourabh Debnath</b>
+        <br/>
+        <span style="font-size: 12px">Software Engineer</span>
+        <br/>
+        <span style="font-size: 12px">GoodWorkLabs Services Private Limited</span>
+      </div>
+    </div>
+  </div>
+  <hr class="custom-hr" />
+  <ul class="nav flex-column white">
+    <li class="nav-item menu-item" placement="right" ngbTooltip="Dashboard" [ngClass]="{'active-item': clicked == 'dashboard'}" (click)="handleRoute('dashboard')">
+      <div class="menu-item-div" [ngClass]="{'menu-item-div-small': !expanded}">
+        <span class="oi oi-pie-chart"></span>&nbsp;&nbsp;&nbsp;&nbsp;
+        <span [ngClass]="{'hide': !expanded}">&nbsp;&nbsp;&nbsp;&nbsp;Dashboard</span>
+      </div>
+      <hr class="hr-divider" />
+    </li>
+    <li class="nav-item menu-item" placement="right" ngbTooltip="Fill Effort" [ngClass]="{'active-item': clicked == 'effort'}"  (click)="handleRoute('effort')">
+      <div class="menu-item-div" [ngClass]="{'menu-item-div-small': !expanded}">
+        <span class="oi oi-beaker"></span>&nbsp;&nbsp;&nbsp;&nbsp;
+        <span [ngClass]="{'hide': !expanded}">&nbsp;&nbsp;&nbsp;&nbsp;Fill Effort</span>
+      </div>
+      <hr class="hr-divider" />
+    </li>
+    <li class="nav-item menu-item" placement="right" ngbTooltip="Master Data" [ngClass]="{'active-item': clicked == 'master'}"  (click)="handleRoute('master')">
+      <div class="menu-item-div" [ngClass]="{'menu-item-div-small': !expanded}">
+        <span class="oi oi-spreadsheet"></span>&nbsp;&nbsp;&nbsp;&nbsp;
+        <span [ngClass]="{'hide': !expanded}">&nbsp;&nbsp;&nbsp;&nbsp;Master Data</span>
+      </div>
+      <hr class="hr-divider" />
+    </li>
+    <li class="nav-item menu-item" placement="right" ngbTooltip="Manage Users" [ngClass]="{'active-item': clicked == 'users'}"  (click)="handleRoute('users')">
+      <div class="menu-item-div" [ngClass]="{'menu-item-div-small': !expanded}">
+        <span class="oi oi-people"></span>&nbsp;&nbsp;&nbsp;&nbsp;
+        <span [ngClass]="{'hide': !expanded}">&nbsp;&nbsp;&nbsp;&nbsp;Manage Users</span>
+      </div>
+      <hr class="hr-divider" />
+    </li>
+  </ul>
+  <ul class="nav flex-column white menu-bottom">
+    <li class="nav-item menu-item-bottom" placement="right" ngbTooltip="Sign Out" (click)="handleSignOut()">
+      <hr class="hr-divider-bottom" />
+      <div class="menu-item-div" [ngClass]="{'menu-item-div-small-bottom': !expanded}">
+        <span class="oi oi-account-logout"></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <span [ngClass]="{'hide': !expanded}">Sign Out</span>
+      </div>
+    </li>
+  </ul>
+</div>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="text-center full-width"><a class="navbar-brand" href="#">{{clickedMap[clicked]}}</a></div>
+</nav>
+<div class="child-div">
+  <router-outlet></router-outlet>
+</div>
