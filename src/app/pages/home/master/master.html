@@ -1,0 +1,89 @@
+<ngb-tabset justify="justified">
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>Applications</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12 text-right">
+            <button class="btn btn-primary" (click)="openAppModal(application)">Add New</button>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+  </ngb-tab>
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>Assign Users</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+        <form #assignUserForm="ngForm" (ngSubmit)="handleAssignUserFormSubmit(assignUserForm)" novalidate>
+          <div class="form-row">
+            <div class="form-group col-md-5">
+              <label class="col-form-label">Application <span class="text-danger">*</span></label>
+              <select class="form-control" required name="application" [(ngModel)]="app.name">
+                <option value="">Select Application</option>
+                <option *ngFor="let appl of applications" [value]="appl">{{appl}}</option>
+              </select>
+            </div>
+            <div class="form-group col-md-5 ml-auto">
+              <label class="col-form-label">Search User <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" placeholder="Type to search" required name="user" [(ngModel)]="app.user">
+              <small class="form-text text-muted">You can search by user's name & email.</small>
+            </div>
+          </div>
+          <div class="text-right">
+            <br/>
+            <button type="submit" class="btn btn-primary">Assign</button>
+          </div>
+        </form>
+      </div>
+    </ng-template>
+  </ngb-tab>
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>Weeks</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+        
+      </div>
+    </ng-template>
+  </ngb-tab>
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>Holidays</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+        
+      </div>
+    </ng-template>
+  </ngb-tab>
+</ngb-tabset>
+<ng-template #application let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add New Application</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="form-group">
+        <label>Application Name <span class="text-danger">*</span></label>
+        <input type="email" class="form-control" placeholder="Application Name">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" placeholder="Add Description (Optional)" rows="4"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Owner <span class="text-danger">*</span></label>
+        <input type="password" class="form-control" placeholder="Owner Name">
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="c()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="addApplication()">Done</button>
+  </div>
+</ng-template>

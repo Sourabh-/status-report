@@ -7,7 +7,7 @@
       <hr class="hr-divider" />
     </li>
   </ul>
-  <div class="profile container-fluid">
+  <div class="profile container-fluid" (click)="openProfileModal(profileModal)">
     <div class="row">
       <div class="col-lg-4 col-md-4 col-sm-5 col-6">
         <img src="../../../assets/images/user.png" class="rounded-circle profileImageLarge trans" [ngClass]="{'profileImageSmall': !expanded}" />
@@ -30,21 +30,21 @@
       </div>
       <hr class="hr-divider" />
     </li>
-    <li class="nav-item menu-item" placement="right" ngbTooltip="Fill Effort" [ngClass]="{'active-item': clicked == 'effort'}"  (click)="handleRoute('effort')">
+    <li class="nav-item menu-item" placement="right" ngbTooltip="Fill Effort" [ngClass]="{'active-item': clicked == 'effort'}" (click)="handleRoute('effort')">
       <div class="menu-item-div" [ngClass]="{'menu-item-div-small': !expanded}">
         <span class="oi oi-beaker"></span>&nbsp;&nbsp;&nbsp;&nbsp;
         <span [ngClass]="{'hide': !expanded}">&nbsp;&nbsp;&nbsp;&nbsp;Fill Effort</span>
       </div>
       <hr class="hr-divider" />
     </li>
-    <li class="nav-item menu-item" placement="right" ngbTooltip="Master Data" [ngClass]="{'active-item': clicked == 'master'}"  (click)="handleRoute('master')">
+    <li class="nav-item menu-item" placement="right" ngbTooltip="Master Data" [ngClass]="{'active-item': clicked == 'master'}" (click)="handleRoute('master')">
       <div class="menu-item-div" [ngClass]="{'menu-item-div-small': !expanded}">
         <span class="oi oi-spreadsheet"></span>&nbsp;&nbsp;&nbsp;&nbsp;
         <span [ngClass]="{'hide': !expanded}">&nbsp;&nbsp;&nbsp;&nbsp;Master Data</span>
       </div>
       <hr class="hr-divider" />
     </li>
-    <li class="nav-item menu-item" placement="right" ngbTooltip="Manage Users" [ngClass]="{'active-item': clicked == 'users'}"  (click)="handleRoute('users')">
+    <li class="nav-item menu-item" placement="right" ngbTooltip="Manage Users" [ngClass]="{'active-item': clicked == 'users'}" (click)="handleRoute('users')">
       <div class="menu-item-div" [ngClass]="{'menu-item-div-small': !expanded}">
         <span class="oi oi-people"></span>&nbsp;&nbsp;&nbsp;&nbsp;
         <span [ngClass]="{'hide': !expanded}">&nbsp;&nbsp;&nbsp;&nbsp;Manage Users</span>
@@ -68,3 +68,64 @@
 <div class="child-div">
   <router-outlet></router-outlet>
 </div>
+<ng-template #profileModal let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Profile</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-lg-4 col-md-4 col-sm-5 col-6">
+        <img src="../../../assets/images/user-large.png" class="profile-image" />
+        <br/>
+        <div style="padding-left: 15px">
+          <a href="javascript:document.querySelector('input#fileInput').click()" class="small-font-size">Update Photo</a>
+          <input id="fileInput" style="display: none" type="file" accept="image/*" />
+        </div>
+      </div>
+      <div class="col-lg-8 col-md-8 col-sm-7 col-6">
+        <b>Sourabh Debnath</b>
+        <br/>
+        <span style="font-size: 12px">Software Engineer</span>
+        <br/>
+        <span class="text-primary" style="font-size: 12px">sourabh.debnath@goodworklabs.com</span>
+        <br/>
+        <span style="font-size: 12px">GoodWorkLabs Services Private Limited</span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="openChangePasswordModal(changePasswordModal)">Change Password</button>
+    <button type="button" class="btn btn-secondary" (click)="c()">Close</button>
+  </div>
+</ng-template>
+<ng-template #changePasswordModal let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Change Password</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="form-group">
+        <label>Old Password <span class="text-danger">*</span></label>
+        <input type="email" class="form-control" placeholder="Enter email">
+      </div>
+      <div class="form-group">
+        <label>New Password <span class="text-danger">*</span></label>
+        <input type="password" class="form-control" placeholder="New Password">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password <span class="text-danger">*</span></label>
+        <input type="password" class="form-control" placeholder="Confirm Password">
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="updatePassword()">Update</button>
+    <button type="button" class="btn btn-secondary" (click)="c()">Close</button>
+  </div>
+</ng-template>

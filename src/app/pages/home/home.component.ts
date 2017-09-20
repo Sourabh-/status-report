@@ -1,5 +1,6 @@
 import { Component, ElementRef, OnInit } from '@angular/core';
 import {Router} from '@angular/router';
+import {NgbModal, ModalDismissReasons, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'page-home',
@@ -12,6 +13,7 @@ import {Router} from '@angular/router';
 export class HomeComponent implements OnInit {
 	expanded = false;
 	clicked = 'dashboard';
+	private modalRef: NgbModalRef;
 	clickedMap = {
 		'dashboard': 'Dashboard',
 		'effort': 'Fill Effort',
@@ -19,7 +21,7 @@ export class HomeComponent implements OnInit {
 		'users': 'Manage Users'
 	};
 
-	constructor(private eRef: ElementRef, private router: Router) {
+	constructor(private eRef: ElementRef, private router: Router, private modalService: NgbModal) {
 		document.body.classList.remove("login-bg");
 	}
 
@@ -57,5 +59,14 @@ export class HomeComponent implements OnInit {
 	handleSignOut() {
 		this.router.navigate(["./login"]);
 		this.clicked = 'dashboard';
+	}
+
+	openProfileModal(profileModal) {
+		this.modalRef = this.modalService.open(profileModal);
+	}
+
+	openChangePasswordModal(passMdl) {
+		this.modalRef.close();
+		this.modalRef = this.modalService.open(passMdl);
 	}
 }
