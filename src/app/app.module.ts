@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppComponent } from './app.component';
 import { RouterModule, Routes } from '@angular/router';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -14,6 +14,10 @@ import { MasterComponent } from './pages/home/master/master.component';
 import { UsersComponent } from './pages/home/users/users.component';
 
 import { DateValidatorDirective } from './services/datevalidator.directive';
+
+import { AmChartsModule } from "@amcharts/amcharts3-angular";
+import { Ng2TableModule } from 'ng2-table/ng2-table';
+import { PaginationModule, TabsModule } from 'ng2-bootstrap/ng2-bootstrap';
 
 const appRoutes: Routes = [
   {
@@ -56,7 +60,11 @@ const appRoutes: Routes = [
     ),
     ReactiveFormsModule,
     HttpModule,
-    FormsModule
+    FormsModule,
+    AmChartsModule,
+    Ng2TableModule,
+    PaginationModule.forRoot(),
+    TabsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

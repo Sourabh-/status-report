@@ -9,6 +9,13 @@
             <button class="btn btn-primary" (click)="openAppModal(application)">Add New</button>
           </div>
         </div>
+        <br/>
+        <ng-table [config]="appTable.config" (tableChanged)="onChangeTable(config)" (cellClicked)="onCellClick($event)" [rows]="appTable.rows" [columns]="appTable.columns">
+        </ng-table>
+        <div class="text-right">
+          <pagination *ngIf="appTable.config.paging" class="pagination-sm" [(ngModel)]="appTable.page" [totalItems]="appTable.length" [itemsPerPage]="appTable.itemsPerPage" [maxSize]="appTable.maxSize" [boundaryLinks]="true" [rotate]="false" (pageChanged)="onChangeTable(config, $event)" (numPages)="appTable.numPages = $event">
+          </pagination>
+        </div>
       </div>
     </ng-template>
   </ngb-tab>
@@ -21,7 +28,7 @@
           <div class="form-row">
             <div class="form-group col-md-5">
               <label class="col-form-label">Application <span class="text-danger">*</span></label>
-              <select class="form-control" required name="application" [(ngModel)]="app.name">
+              <select class="form-control" required name="applicationName" [(ngModel)]="app.name">
                 <option value="">Select Application</option>
                 <option *ngFor="let appl of applications" [value]="appl">{{appl}}</option>
               </select>
@@ -41,10 +48,27 @@
     </ng-template>
   </ngb-tab>
   <ngb-tab>
-    <ng-template ngbTabTitle><b>Weeks</b></ng-template>
+    <ng-template ngbTabTitle><b>Add Weeks</b></ng-template>
     <ng-template ngbTabContent>
       <br/>
       <div class="container">
+        <div class="form-row">
+          <div class="form-group col-md-12 col-xs-12">
+            <label class="col-form-label">Add Week</label>
+            <br/>
+            <ngb-datepicker #dp [minDate]="minDate" ngModel [displayMonths]="2" (ngModelChange)="onDateChange($event)" [navigation]="select" [dayTemplate]="t"></ngb-datepicker>
+            <ng-template #t let-date="date" let-focused="focused">
+              <span class="custom-day" [class.focused]="focused" [class.range]="isFrom(date) || isTo(date) || isInside(date) || isHovered(date)" [class.faded]="isHovered(date) || isInside(date)" (mouseenter)="hoveredDate = date" (mouseleave)="hoveredDate = null" [class.text-muted]="isLessThanToday(date)">
+                {{ date.day }}
+              </span>
+            </ng-template>
+          </div>
+          <span class="text-danger small-font-size" [hidden]="!showWeekErrMsg">A week cannot have more than 7 days *</span>
+        </div>
+        <div class="text-right">
+          <br/>
+          <button type="button" class="btn btn-primary" [disabled]="!fromDate || !toDate" (click)="addWeek()">Add</button>
+        </div>
       </div>
     </ng-template>
   </ngb-tab>

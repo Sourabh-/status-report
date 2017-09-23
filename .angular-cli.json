@@ -25,7 +25,10 @@
         "assets/styles/bootstrap-reboot.min.css",
         "assets/styles/open-iconic-bootstrap.css"
       ],
-      "scripts": [],
+      "scripts": [
+        "assets/scripts/amcharts.js",
+        "assets/scripts/serial.js"
+      ],
       "environmentSource": "environments/environment.ts",
       "environments": {
         "dev": "environments/environment.ts",

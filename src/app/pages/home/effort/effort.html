@@ -4,7 +4,33 @@
     <ng-template ngbTabContent>
       <br/>
       <div class="container">
-        
+        <form #effortForm="ngForm" (ngSubmit)="handleEffortFormSubmit(noteForm)" novalidate>
+          <div class="form-row">
+            <div class="form-group col-md-5">
+              <label class="col-form-label">Application <span class="text-danger">*</span></label>
+              <select class="form-control" required name="applicationName" [(ngModel)]="effort.applicationName">
+                <option value="">Select Application</option>
+                <option *ngFor="let appl of applications" [value]="appl">{{appl}}</option>
+              </select>
+            </div>
+            <div class="form-group col-md-5 ml-auto">
+              <label class="col-form-label">Week <span class="text-danger">*</span></label>
+              <select class="form-control" required name="week" [(ngModel)]="effort.week">
+                <option value="">Select Week</option>
+                <option *ngFor="let week of weeks" [value]="week">{{week}}</option>
+              </select>
+            </div>
+            <div class="form-group col-md-5">
+              <label class="col-form-label">Effort (No. of Hours) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" required name="hours" [(ngModel)]="effort.hours" min="0" />
+              <small class="form-text text-muted">Note that, once added this cannot be changed. Should be between 0-168</small>
+            </div>
+          </div>
+          <div class="text-right">
+            <br/>
+            <button type="submit" class="btn btn-primary" [disabled]="!effortForm.form.valid">Add</button>
+          </div>
+        </form>
       </div>
     </ng-template>
   </ngb-tab>

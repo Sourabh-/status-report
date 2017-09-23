@@ -6,7 +6,21 @@ import { Component } from '@angular/core';
   providers: []
 })
 export class EffortComponent {
+	effort = {
+		applicationName: "",
+		week: "",
+		hours: 0
+	};
+
 	constructor() {
+		
+	}
+
+	handleEffortFormSubmit() {
+
+	}
+
+	handleNoteFormSubmit() {
 		
 	}
 }
