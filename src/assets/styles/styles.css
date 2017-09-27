@@ -229,7 +229,6 @@ body {
 }
 
 .graphic-card {
-  border-radius: 10px;
   background: #f8f9fa;
   -webkit-box-shadow: 0px 2px 10px -5px #000000;
   -moz-box-shadow: 0px 2px 10px -5px #000000;

@@ -9,8 +9,14 @@ export class EffortComponent {
 	effort = {
 		applicationName: "",
 		week: "",
-		hours: 0
+		hours: 0,
+		remarks: ""
 	};
+
+	note = {
+		applicationName: "",
+		message: ""
+	}
 
 	constructor() {
 		

@@ -1,0 +1,11 @@
+{
+	"invalidParameters": "Invalid Parameters",
+	"ise": "Oops! Looks like something isn't right. Please try again after sometime",
+	"noEmailMatch": "Email Id not found",
+	"incorrectPassword": "Incorrect password",
+	"notAuthorized": "Not authorized",
+	"emailIdExists": "Email Id already exists",
+	"invalidOwner": "Owner not found",
+	"appExists": "Application name already exists",
+	"invalidApp": "Application not found"
+}
