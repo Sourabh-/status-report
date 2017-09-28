@@ -3,7 +3,7 @@ const router = express.Router();
 var bcrypt = require('bcrypt');
 const saltRounds = 10;
 const fs = require('fs');
-const authMiddleware = require('../utility/auth');
+const authMiddleware = require('../../utility/auth');
 var randomstring = require("randomstring");
 const messages = JSON.parse(fs.readFileSync('./server/utility/messages.json'));
 
@@ -47,7 +47,7 @@ router.post("/create", authMiddleware.auth, function(req, res) {
       "createdOn": new Date().getTime()
     };
 
-    req.app.db.collection("users").insertOne(user).then(function(res) {
+    req.app.db.collection("users").insertOne(user).then(function(reslt) {
       res.status(201).json(user);
       //Send email here
     }).catch(function(err) {
@@ -112,7 +112,11 @@ router.get("/search", authMiddleware.auth, function(req, res) {
         		var uIds = [];
         		for(var i=0; i<appUsers.length; i++)
         			uIds.push(appUsers[i].userId);
-        		findUserAndReturn({_id: uIds});
+
+            if(req.query.unassigned === true && req.query.name)
+        		  findUserAndReturn({_id: {$nin: uIds}, name: new RegExp(req.query.name, 'i')});
+            else
+              findUserAndReturn({_id: uIds});
         	} else 
         		res.status(204).json();
         }).catch(function(err) {

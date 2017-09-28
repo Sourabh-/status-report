@@ -11,8 +11,11 @@ const config = JSON.parse(fs.readFileSync("./config.json"));
 
 // Get our API routes
 const account = require('./server/routes/account');
-const users = require('./server/routes/users');
+const users = require('./server/routes/masters/users');
 const applications = require('./server/routes/masters/applications');
+const weeks = require('./server/routes/masters/weeks');
+const designations = require('./server/routes/masters/designations');
+const effort = require('./server/routes/effort');
 
 const app = express();
 
@@ -43,6 +46,9 @@ app.use(express.static(path.join(__dirname, 'dist')));
 app.use('/session', account);
 app.use('/users', users);
 app.use('/applications', applications);
+app.use('/weeks', weeks);
+app.use('/effort', effort);
+app.use('/designations', designations);
 
 // Catch all other routes and return the index file
 app.get('*', (req, res) => {

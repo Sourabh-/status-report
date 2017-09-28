@@ -7,5 +7,10 @@
 	"emailIdExists": "Email Id already exists",
 	"invalidOwner": "Owner not found",
 	"appExists": "Application name already exists",
-	"invalidApp": "Application not found"
+	"invalidApp": "Application not found",
+	"invalidWeek": "Invalid week selected",
+	"weekAlreadyExists": "Week already exists",
+	"invalidHours": "Invalid number of hours",
+	"effortExists": "Effort already exists for given week and application",
+	"desigExists": "Designation already exists"
 }

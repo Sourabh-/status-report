@@ -31,7 +31,7 @@ router.post("/create", authMiddleware.auth, function(req, res) {
           ownerId: user._id,
           createdOn: new Date().getTime()
         };
-        req.app.db.collection("applications").insertOne(app).then(function(res) {
+        req.app.db.collection("applications").insertOne(app).then(function(reslt) {
           res.status(201).json(app);
         }).catch(function(err) {
           (err.code == 11000) ? res.status(400).json({
