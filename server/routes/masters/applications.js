@@ -11,24 +11,18 @@ router.post("/create", authMiddleware.auth, function(req, res) {
     res.status(403).json({
       message: messages.notAuthorized
     });
-  } else if (!req.body.applicationName || !req.body.ownerId) {
+  } else if (!req.body.applicationName || !req.body.ownerEmailId) {
     res.status(400).json({
       message: messages.invalidParameters
     })
   } else {
-    //Check if valid owner Id
-    if (!ObjectID.isValid(req.body.ownerId)) {
-      return res.status(400).json({
-        message: messages.invalidOwner
-      })
-    }
 
-    req.app.db.findOne({ _id: ObjectID(req.body.ownerId) }, { fields: { _id: 1 } }).then(function(user) {
+    req.app.db.findOne({ emailId: req.body.ownerEmailId }, { fields: { _id: 1 } }).then(function(user) {
       if (user) {
         var app = {
           applicationName: req.body.applicationName,
           description: req.body.description || "",
-          ownerId: user._id,
+          ownerEmailId: req.body.ownerEmailId,
           createdOn: new Date().getTime()
         };
         req.app.db.collection("applications").insertOne(app).then(function(reslt) {
@@ -63,19 +57,15 @@ router.put("/update/:appId", authMiddleware.auth, function(req, res) {
     res.status(400).json({
       message: messages.invalidApp
     })
-  } else if (!req.body.ownerId) {
+  } else if (!req.body.ownerEmailId) {
     res.status(400).json({
       message: messages.invalidParameters
     })
-  } else if (!ObjectID.isValid(req.body.ownerId)) {
-    res.status(400).json({
-      message: messages.invalidOwner
-    })
   } else {
     //Check if owner exists
-    req.app.db.findOne({ _id: ObjectID(req.body.ownerId) }, { fields: { _id: 1 } }).then(function(user) {
+    req.app.db.findOne({ emailId: req.body.ownerEmailId }, { fields: { _id: 1 } }).then(function(user) {
       if (user) {
-        req.app.db.updateOne({ _id: ObjectID(req.body.appId) }, { $set: { "ownerId": ObjectID(req.body.ownerId) } }).then(function(res) {
+        req.app.db.updateOne({ _id: ObjectID(req.body.appId) }, { $set: { "ownerEmailId": req.body.ownerEmailId } }).then(function(res) {
           if (res.modifiedCount == 1) {
             res.status(204).json();
           } else {
@@ -105,13 +95,9 @@ router.get("/search", authMiddleware.auth, function(req, res) {
     res.status(403).json({
       message: messages.notAuthorized
     });
-  } else if (req.query.ownerId && !ObjectID.isValid(req.query.ownerId)) {
-    res.status(400).json({
-      message: messages.invalidOwner
-    })
   } else {
     var query = {};
-    if (req.query.ownerId) query.ownerId = ObjectID(req.query.ownerId);
+    if (req.query.ownerEmailId) query.ownerEmailId = req.query.ownerEmailId;
     if (req.query.applicationName) query.applicationName = new RegExp(req.query.applicationName, "i");
     req.app.db.find(query).toArray().then(function(apps) {
       if (apps.length == 0) {
@@ -123,6 +109,49 @@ router.get("/search", authMiddleware.auth, function(req, res) {
         }
 
         res.status(200).json(apps);
+      }
+    }).catch(function(err) {
+      res.status(500).json({
+        message: messages.ise
+      });
+    })
+  }
+})
+
+router.post("/message", authMiddleware.auth, function(req, res) {
+  if (!req.body.ownerEmailId || !req.body.appId || !req.body.message) {
+    res.status(400).json({
+      message: messages.invalidParameters
+    })
+  } else if (!ObjectID.isValid(req.body.appId)) {
+    res.status(400).json({
+      message: messages.invalidApp
+    })
+  } else {
+    req.app.db.collection("applications").findOne({
+      _id: ObjectID(req.body.appId),
+      ownerEmailId: req.body.ownerEmailId
+    }, { fields: { _id: 1 } }).then(function(app) {
+      if (app) {
+        let mailOptions = {
+          to: req.body.emailId,
+          subject: 'Report- Message Received',
+          html: '<b>Hi,</b><br/>Following message is sent to you from <i><b>' + req.session.emailId + '</b></i>:<br/><br/><i><b>' + req.body.message + '</b></i>' // html body
+        };
+
+        req.app.mailer.sendMail(mailOptions, function(err, response) {
+          if (err) {
+            res.status(500).json({
+              message: messages.ise
+            })
+          } else {
+            res.status(204).json();
+          }
+        })
+      } else {
+        res.status(400).json({
+          message: messages.invalidApp
+        })
       }
     }).catch(function(err) {
       res.status(500).json({

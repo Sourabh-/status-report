@@ -6,7 +6,7 @@ const fs = require('fs');
 const authMiddleware = require('../../utility/auth');
 var randomstring = require("randomstring");
 const messages = JSON.parse(fs.readFileSync('./server/utility/messages.json'));
-
+var ObjectID = require('mongodb').ObjectID;
 
 //=============COMMON FUNCTIONALITY=============//
 function findUserAndReturn(req, res, query) {
@@ -50,6 +50,26 @@ router.post("/create", authMiddleware.auth, function(req, res) {
     req.app.db.collection("users").insertOne(user).then(function(reslt) {
       res.status(201).json(user);
       //Send email here
+      let mailOptions = {
+        to: req.body.emailId,
+        subject: 'Welcome to Report Application!',
+        html: `<b>Hi,</b>
+               <br/>
+               You have been added to the report application. Following are your login credentials:
+               <br/>
+               EmailId: ${req.body.emailId}
+               <br/>
+               Password: ${pwd}
+               <br/>
+               We suggest you to change your password after login.` // html body
+      };
+
+      req.app.mailer.sendMail(mailOptions, function(err, response) {
+        if (err) {
+
+        }
+      })
+
     }).catch(function(err) {
       (err.code == 11000) ? res.status(400).json({
         message: messages.emailIdExists
@@ -108,17 +128,17 @@ router.get("/search", authMiddleware.auth, function(req, res) {
     req.app.db.collection("applications").find({ applicationName: req.query.applicationName }).toArray().then(function(apps) {
       if (apps.length) {
         req.app.db.collection("applicationUsers").find({ appId: apps[0]._id }).toArray().then(function(appUsers) {
-        	if(appUsers.length) {
-        		var uIds = [];
-        		for(var i=0; i<appUsers.length; i++)
-        			uIds.push(appUsers[i].userId);
+          if (appUsers.length) {
+            var uIds = [];
+            for (var i = 0; i < appUsers.length; i++)
+              uIds.push(appUsers[i].userId);
 
-            if(req.query.unassigned === true && req.query.name)
-        		  findUserAndReturn({_id: {$nin: uIds}, name: new RegExp(req.query.name, 'i')});
+            if (req.query.unassigned === true && req.query.name)
+              findUserAndReturn({ _id: { $nin: uIds }, name: new RegExp(req.query.name, 'i') });
             else
-              findUserAndReturn({_id: uIds});
-        	} else 
-        		res.status(204).json();
+              findUserAndReturn({ _id: uIds });
+          } else
+            res.status(204).json();
         }).catch(function(err) {
           res.status(500).json({
             message: messages.ise
@@ -139,6 +159,57 @@ router.get("/search", authMiddleware.auth, function(req, res) {
     if (req.query.dob) query.dob = req.query.dob;
     if (req.query.emailId) query.emailId = req.query.emailId;
     findUserAndReturn(req, res, query);
+  }
+})
+
+router.post("/assign", authMiddleware.auth, function(req, res) {
+  if (!req.session.admin) {
+    res.status(403).json({
+      message: messages.notAuthorized
+    });
+  } else if (!req.body.emailId || !req.body.appId || !/\@/.test(req.body.emailId)) {
+    res.status(400).json({
+      message: messages.invalidParameters
+    })
+  } else if (!ObjectID.isValid(req.body.appId)) {
+    res.status(400).json({
+      message: messages.invalidApp
+    })
+  } else {
+    req.app.db.collection("users").findOne({ emailId: req.body.emailId }, { fields: { _id: 1 } }).then(function(user) {
+      if (user) {
+        req.app.db.collection("applications").findOne({ _id: ObjectID(req.body.appId) }, { fields: { _id: 1 } }).then(function(app) {
+          if (app) {
+            req.db.collection("assignedUsers").insertOne({
+              appId: ObjectID(req.body.appId),
+              emailId: req.body.emailId
+            }).then(function(reslt) {
+              res.status(201).json(reslt);
+            }).catch(function(err) {
+              (err.code == 11000) ? res.status(400).json({
+                message: messages.userAlreadyAssigned
+              }): res.status(500).json({
+                message: messages.ise
+              });
+            })
+          } else
+            res.status(400).json({
+              message: messages.invalidApp
+            })
+        }).catch(function(err) {
+          res.status(500).json({
+            message: messages.ise
+          })
+        })
+      } else
+        res.status(400).json({
+          message: messages.noEmailMatch
+        })
+    }).catch(function(err) {
+      res.status(500).json({
+        message: messages.ise
+      })
+    })
   }
 })
 

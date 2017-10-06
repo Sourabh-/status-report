@@ -8,6 +8,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 var cookieParser = require('cookie-parser');
 const config = JSON.parse(fs.readFileSync("./config.json"));
+const nodemailer = require("nodemailer");
 
 // Get our API routes
 const account = require('./server/routes/account');
@@ -43,7 +44,7 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Set our api routes
-app.use('/session', account);
+app.use('/account', account);
 app.use('/users', users);
 app.use('/applications', applications);
 app.use('/weeks', weeks);
@@ -60,6 +61,16 @@ MongoClient.connect(config.mongo.url, function(err, db) {
   app.db = db;
 })
 
+var smtpTransport = nodemailer.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    auth: {
+        user: "",
+        pass: ""
+    }
+});
+
+app.mailer = smtpTransport;
 /**
  * Get port from environment and store in Express.
  */
