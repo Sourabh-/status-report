@@ -14,10 +14,12 @@ import { MasterComponent } from './pages/home/master/master.component';
 import { UsersComponent } from './pages/home/users/users.component';
 
 import { DateValidatorDirective } from './services/datevalidator.directive';
+import { Utilities } from './services/utility.service';
+import { AuthGuard } from './services/authGuard.service';
 
 import { AmChartsModule } from "@amcharts/amcharts3-angular";
 import { Ng2TableModule } from 'ng2-table/ng2-table';
-import { PaginationModule, TabsModule } from 'ng2-bootstrap/ng2-bootstrap';
+import { PaginationModule, TabsModule } from 'ng2-bootstrap';
 
 const appRoutes: Routes = [
   {
@@ -27,6 +29,7 @@ const appRoutes: Routes = [
   {
     path: 'home',
     component: HomeComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
@@ -66,7 +69,9 @@ const appRoutes: Routes = [
     PaginationModule.forRoot(),
     TabsModule
   ],
-  providers: [],
+  providers: [
+    Utilities, AuthGuard
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
