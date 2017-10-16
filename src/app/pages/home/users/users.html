@@ -38,6 +38,9 @@
                 <input id="isAdmin" type="checkbox" class="form-check-input" name="isAdmin" [(ngModel)]="user.isAdmin" #isAdmin="ngModel" (ngModelChange)="confirmAdminPopup($event, confirm)"> Is Admin ?
               </label>
             </div>
+            <div class="form-group col-md-12 col-xs-12 text-danger" *ngIf="isError">
+              {{errorMsg}}
+            </div>
           </div>
           <div class="text-right">
             <br/>
@@ -70,29 +73,27 @@
           <div class="form-row">
             <div class="form-group col-md-5">
               <label class="col-form-label">Full Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" placeholder="Full Name" required name="editName" ngModel>
+              <input type="text" class="form-control" placeholder="Full Name" required name="name" ngModel [(ngModel)]="user.name">
             </div>
             <div class="form-group col-md-5 ml-auto">
-              <label class="col-form-label">Email Id <span class="text-danger">*</span></label>
-              <input type="email" class="form-control" placeholder="Email Id" required name="editEmailId" ngModel #editEmailId="ngModel" email>
-              <span class="text-danger small-font-size" [hidden]="editEmailId.valid || editEmailId.pristine">Enter valid email ID *</span>
-            </div>
-            <div class="form-group col-md-5">
               <label class="col-form-label">Date Of Birth <span class="text-danger">*</span></label>
               <div class="input-group">
-                <input class="form-control" placeholder="dd/mm/yyyy" name="editDob" ngModel ngbDatepicker #editDate="ngbDatepicker" #editDob="ngModel" datevalidator required>
+                <input class="form-control" placeholder="dd/mm/yyyy" name="dob" ngModel ngbDatepicker #editDate="ngbDatepicker" #editDob="ngModel" datevalidator required [(ngModel)]="user.dob">
                 <button class="input-group-addon pointer-cursor" (click)="editDate.toggle()" type="button">
                   <span class="oi oi-calendar"></span>
                 </button>
               </div>
               <span class="text-danger small-font-size" [hidden]="editDob.valid || editDob.pristine">Enter valid date of birth *</span>
             </div>
-            <div class="form-group col-md-5 ml-auto">
+            <div class="form-group col-md-5">
               <label class="col-form-label">Designation <span class="text-danger">*</span></label>
-              <select class="form-control" required name="editDesignation" ngModel>
+              <select class="form-control" required name="designation" ngModel [(ngModel)]="user.designation">
                 <option value="">Select Designation</option>
                 <option *ngFor="let desig of designations" [value]="desig">{{desig}}</option>
               </select>
+            </div>
+            <div class="form-group col-md-12 col-xs-12 text-danger" *ngIf="isError">
+              {{errorMsg}}
             </div>
           </div>
           <div class="text-right">
@@ -112,17 +113,17 @@
           <div class="form-row">
             <div class="form-group col-md-5">
               <label class="col-form-label">Full Name</label>
-              <input type="text" class="form-control" placeholder="Full Name" name="searchName" ngModel>
+              <input type="text" class="form-control" placeholder="Full Name" name="name" ngModel>
             </div>
             <div class="form-group col-md-5 ml-auto">
               <label class="col-form-label">Email Id</label>
-              <input type="email" class="form-control" placeholder="Email Id" name="searchEmailId" ngModel #searchEmailId="ngModel" email>
+              <input type="email" class="form-control" placeholder="Email Id" name="emailId" ngModel #searchEmailId="ngModel" email>
               <span class="text-danger small-font-size" [hidden]="searchEmailId.valid || searchEmailId.pristine">Enter valid email ID *</span>
             </div>
             <div class="form-group col-md-5">
               <label class="col-form-label">Date Of Birth</label>
               <div class="input-group">
-                <input class="form-control" placeholder="dd/mm/yyyy" name="searchDob" ngModel ngbDatepicker #searchDate="ngbDatepicker" #searchDob="ngModel" datevalidator>
+                <input class="form-control" placeholder="dd/mm/yyyy" name="dob" ngModel ngbDatepicker #searchDate="ngbDatepicker" #searchDob="ngModel" datevalidator>
                 <button class="input-group-addon pointer-cursor" (click)="searchDate.toggle()" type="button">
                   <span class="oi oi-calendar"></span>
                 </button>
@@ -131,17 +132,30 @@
             </div>
             <div class="form-group col-md-5 ml-auto">
               <label class="col-form-label">Designation</label>
-              <select class="form-control" name="searchDesignation" ngModel>
+              <select class="form-control" name="designation" ngModel>
                 <option value="">Select Designation</option>
                 <option *ngFor="let desig of designations" [value]="desig">{{desig}}</option>
               </select>
             </div>
+            <div class="form-group col-md-12 col-xs-12 text-danger" *ngIf="isError">
+              {{errorMsg}}
+            </div>
           </div>
           <div class="text-right">
             <br/>
-            <button type="submit" class="btn btn-primary" [disabled]="(searchUserForm.value.searchEmailId && searchEmailId.errors && searchEmailId.errors.email) || (searchUserForm.value.searchDob && searchDob.errors && searchDob.errors.datevalidator && !searchDob.errors.datevalidator.valid)">Search</button>
+            <button type="submit" class="btn btn-primary" [disabled]="(searchUserForm.value.emailId && searchEmailId.errors && searchEmailId.errors.email) || (searchUserForm.value.dob && searchDob.errors && searchDob.errors.datevalidator && !searchDob.errors.datevalidator.valid)">Search</button>
           </div>
         </form>
+        <br/>
+        <div *ngIf="isSearchResult">
+          <h5>Search Result</h5>
+          <ng-table [config]="userTable.config" (tableChanged)="onChangeTable(userTable.config, '', 'userTable')" (cellClicked)="onCellClick($event)" [rows]="userTable.rows" [columns]="userTable.columns">
+          </ng-table>
+          <div class="text-right">
+            <pagination *ngIf="userTable.config.paging" class="pagination-sm" [(ngModel)]="userTable.page" [totalItems]="userTable.length" [itemsPerPage]="userTable.itemsPerPage" [maxSize]="userTable.maxSize" [boundaryLinks]="true" [rotate]="false" (pageChanged)="onChangeTable(userTable.config, $event, 'userTable')" (numPages)="userTable.numPages = $event">
+            </pagination>
+          </div>
+        </div>
       </div>
     </ng-template>
   </ngb-tab>

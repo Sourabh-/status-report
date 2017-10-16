@@ -12,7 +12,7 @@ var ObjectID = require('mongodb').ObjectID;
 function findUserAndReturn(req, res, query) {
   req.app.db.collection("users").find(query, {
     fields: { emailId: 1, name: 1, dob: 1, isAdmin: 1, thumbnail: 1, designation: 1, createdOn: 1 }
-  }).then(function(docs) {
+  }).toArray().then(function(docs) {
     if (docs.length == 0) {
       res.status(204).json();
     } else {
@@ -53,20 +53,24 @@ router.post("/create", authMiddleware.auth, function(req, res) {
       let mailOptions = {
         to: req.body.emailId,
         subject: 'Welcome to Report Application!',
-        html: `<b>Hi,</b>
+        html: `<b>Hi ${req.body.name},</b>
                <br/>
                You have been added to the report application. Following are your login credentials:
+               <br/><br/>
+               EmailId: <b>${req.body.emailId}</b>
                <br/>
-               EmailId: ${req.body.emailId}
+               Password: <b>${pwd}</b>
+               <br/><br/>
+               We suggest you to change your password after login.
+               <br/><br/>
+               Best regards!
                <br/>
-               Password: ${pwd}
-               <br/>
-               We suggest you to change your password after login.` // html body
+               Report Team` // html body
       };
 
       req.app.mailer.sendMail(mailOptions, function(err, response) {
         if (err) {
-
+          console.log(err);
         }
       })
 
@@ -101,11 +105,11 @@ router.put("/update/:emailId", authMiddleware.auth, function(req, res) {
     if (req.body.designation) user.designation = req.body.designation;
     if (req.body.thumbnail) user.thumbnail = req.body.thumbnail;
 
-    req.app.db.collection("users").findOneAndUpdate({ emailId: req.params.emailId }, { $set: users }, {
+    req.app.db.collection("users").findOneAndUpdate({ emailId: req.params.emailId }, { $set: user }, {
       projection: { emailId: 1, name: 1, dob: 1, isAdmin: 1, thumbnail: 1, designation: 1 },
       returnOriginal: false
-    }).then(function(res) {
-      if (res.modifiedCount == 1) {
+    }).then(function(reslt) {
+      if (reslt.value) {
         res.status(204).json();
       } else {
         res.status(400).json({
@@ -113,6 +117,7 @@ router.put("/update/:emailId", authMiddleware.auth, function(req, res) {
         })
       }
     }).catch(function(err) {
+      console.log(err);
       res.status(500).json({
         message: messages.ise
       })

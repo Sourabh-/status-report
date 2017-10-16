@@ -43,6 +43,13 @@ app.use(session({
 // Point static path to dist
 app.use(express.static(path.join(__dirname, 'dist')));
 
+//ONLY IF CROSS ORIGIN REQUEST IS ALLOWED
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 // Set our api routes
 app.use('/account', account);
 app.use('/users', users);
@@ -65,8 +72,8 @@ var smtpTransport = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
     auth: {
-        user: "",
-        pass: ""
+        user: "shibadebnath@gmail.com",
+        pass: "facedifficulties"
     }
 });
 

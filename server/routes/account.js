@@ -6,6 +6,7 @@ const fs = require('fs');
 const uuid = require('uuid/v1');
 const messages = JSON.parse(fs.readFileSync('./server/utility/messages.json'));
 const authMiddleware = require('../utility/auth');
+var randomstring = require("randomstring");
 
 //Login- Create session
 router.post("/session/create", function(req, res) {
@@ -27,7 +28,7 @@ router.post("/session/create", function(req, res) {
             req.session.sessionId = uuid();
             req.session.emailId = docs[0].emailId;
             req.session.isAdmin = docs[0].isAdmin;
-            res.cookie('sessionId', req.session.sessionId, { maxAge: (5 * 24 * 60 * 60 * 1000), httpOnly: true });
+            res.cookie('sessionId', req.session.sessionId, { maxAge: (5 * 24 * 60 * 60 * 1000), httpOnly: false });
             res.status(201).json(docs[0]);
 
             //If pristine, update
@@ -53,7 +54,7 @@ router.post("/session/create", function(req, res) {
 router.delete("/session/destroy", function(req, res) {
   if (req.session) req.session.destroy();
   res.clearCookie("sessionId");
-  res.status(200).json();
+  res.status(204).json();
 });
 
 //Change password
@@ -71,7 +72,7 @@ router.post("/password/update", authMiddleware.auth, function(req, res) {
           })
         } else {
           var salt = bcrypt.genSaltSync(saltRounds);
-          req.app.db.collection("users").updateOne({ emailId: req.session.emailId }, { $set: { password: bcrypt.hashSync(req.body.newPassword, salt) } }).then(function(res) {
+          req.app.db.collection("users").updateOne({ emailId: req.session.emailId }, { $set: { password: bcrypt.hashSync(req.body.newPassword, salt) } }).then(function(reslt) {
             res.status(204).json();
           }).catch(function(err) {
             res.status(500).json({
@@ -90,7 +91,7 @@ router.post("/password/update", authMiddleware.auth, function(req, res) {
 
 //Forgot passward
 //Verify emailId & send a generated password to email
-router.post("/password/forgot", authMiddleware.auth, function(req, res) {
+router.post("/password/forgot", function(req, res) {
   if (!req.body.emailId || !/\@/.test(req.body.emailId)) {
     res.status(400).json({
       message: messages.invalidParameters
@@ -103,7 +104,19 @@ router.post("/password/forgot", authMiddleware.auth, function(req, res) {
         let mailOptions = {
           to: req.body.emailId,
           subject: 'Report- Password Change Requested',
-          html: '<b>Hi,</b><br/>We received a request for password change.<br/>Following is your new auto generated password<br><b>' + newPwd + '</b><br/>We suggest you to change your password after you login.<br/>' // html body
+          html: `<b>Hi,</b>
+                 <br/><br/>
+                 We received a password change request for your account.
+                 <br/>
+                 Following is your new auto generated password
+                 <br/><br/>
+                 <b>${newPwd}</b>
+                 <br/><br/>
+                 We suggest you to change your password after you login.
+                 <br/><br/>
+                 Best regards!
+                 <br/>
+                 Report Team` // html body
         };
 
         req.app.mailer.sendMail(mailOptions, function(err, response) {
@@ -113,7 +126,7 @@ router.post("/password/forgot", authMiddleware.auth, function(req, res) {
             })
           } else {
             //Update password to new password & set pristine
-            req.app.db.updateOne({ emailId: req.body.emailId }, {
+            req.app.db.collection("users").updateOne({ emailId: req.body.emailId }, {
               $set: {
                 pristine: true,
                 password: bcrypt.hashSync(newPwd, salt)
@@ -133,6 +146,7 @@ router.post("/password/forgot", authMiddleware.auth, function(req, res) {
         })
       }
     }).catch(function(err) {
+      console.log(err);
       res.status(500).json({
         message: messages.ise
       })

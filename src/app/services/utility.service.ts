@@ -2,7 +2,11 @@ import { Injectable } from "@angular/core";
 
 @Injectable()
 export class Utilities {
-	setCookie(cname, cvalue, exdays) {
+	
+	showAlertMsg:boolean = false;
+	alertMessage:string = '';
+
+	setCookie(cname, cvalue, exdays?) {
 		var d = new Date();
     	d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     	var expires = "expires="+ d.toUTCString();

@@ -13,6 +13,7 @@ export class DashboardComponent implements OnInit {
   private chart3: AmChart;
   private chart4: AmChart;
   private chart5: AmChart;
+  
   chartData = [ {
     "country": "USA",
     "visits": 4252
@@ -50,6 +51,7 @@ export class DashboardComponent implements OnInit {
 	}
 
 	ngOnInit() {
+		
 		this.chart = this.AmCharts.makeChart("chartdiv", {
 	      "type": "serial",
 	      "theme": "light",
@@ -61,7 +63,7 @@ export class DashboardComponent implements OnInit {
 		  }],
 		  "categoryAxis": {// ... other category axis settings
   			 "labelRotation": 90
-}
+		  }		
 	    });
 
 	    this.chart2 = this.AmCharts.makeChart("chartdiv1", {
