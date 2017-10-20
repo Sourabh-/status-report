@@ -68,7 +68,7 @@ export class UsersComponent {
     userTable = {
         length: 1,
         page: 1,
-        itemsPerPage: 1,
+        itemsPerPage: 10,
         maxSize: 5,
         numPages: 1,
         rows: [],
@@ -111,7 +111,7 @@ export class UsersComponent {
 				},
 				error => {
 					this.isError = true;
-					this.errorMsg = error.json() && error.json().message ? (error.json().message + " *") : "Something isn't right. Try after sometime.";
+					this.errorMsg = error.json() && error.json().message ? (error.json().message + " *") : "Something isn't right. Try after sometime *";
 				}
 			)
 		};
@@ -138,7 +138,7 @@ export class UsersComponent {
 				},
 				error => {
 					this.isError = true;
-					this.errorMsg = error.json() && error.json().message ? (error.json().message + " *") : "Something isn't right. Try after sometime.";
+					this.errorMsg = error.json() && error.json().message ? (error.json().message + " *") : "Something isn't right. Try after sometime *";
 				}
 			)
 		}
@@ -168,9 +168,9 @@ export class UsersComponent {
 				error => {
 					this.isError = true;
 					try {
-						this.errorMsg = error.json() && error.json().message ? (error.json().message + " *") : "Something isn't right. Try after sometime.";
+						this.errorMsg = error.json() && error.json().message ? (error.json().message + " *") : "Something isn't right. Try after sometime *";
 					} catch (e) {
-						this.errorMsg = "Something isn't right. Try after sometime.";
+						this.errorMsg = "Something isn't right. Try after sometime *";
 					}
 				}
 			)
@@ -193,7 +193,7 @@ export class UsersComponent {
 				if(data && data.length) {
 					this.userTable.data = data;
 					this.isSearchResult = true;
-					this.onChangeTable(this.userTable.config, {page: this.userTable.page, itemsPerPage: 1}, "userTable");
+					this.onChangeTable(this.userTable.config, {page: this.userTable.page, itemsPerPage: 10}, "userTable");
 				} else {
 					this.userTable.data = [];
 					this.isSearchResult = false;
@@ -207,7 +207,7 @@ export class UsersComponent {
 			},
 			error => {
 				this.isError = true;
-				this.errorMsg = error.json() && error.json().message ? (error.json().message + " *") : "Something isn't right. Try after sometime.";
+				this.errorMsg = error.json() && error.json().message ? (error.json().message + " *") : "Something isn't right. Try after sometime *";
 			}
 		)
 	}

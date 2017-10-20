@@ -101,4 +101,87 @@ export class AjaxService {
         return this.http.request(new Request(requestOptions))
         .map((res: Response) => res.json())
     }
+
+    createApp(applicationName, ownerEmailId, description?) {
+        let requestOptions = new RequestOptions({
+            method: 'POST',
+            url: '/applications/create',
+            headers: new Headers({"Content-Type": "application/json"}),
+            body: {
+                applicationName: applicationName,
+                ownerEmailId: ownerEmailId,
+                description: description || ""
+            }
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())   
+    }
+
+    getApp(application?) {
+        let params = new URLSearchParams();
+        if(application)
+            for (var key in application) {
+                params.set(key, application[key]);
+            }
+
+        let requestOptions = new RequestOptions({
+            method: 'GET',
+            url: '/applications/search',
+            headers: new Headers({"Content-Type": "application/json"}),
+            params: params
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())   
+    }
+
+    assignUser(appId, emailId) {
+        let requestOptions = new RequestOptions({
+            method: 'POST',
+            url: '/users/assign',
+            headers: new Headers({"Content-Type": "application/json"}),
+            body: {
+                appId: appId,
+                emailId: emailId
+            }
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())   
+    }
+
+    addWeek(week) {
+        let requestOptions = new RequestOptions({
+            method: 'POST',
+            url: '/weeks/create',
+            headers: new Headers({"Content-Type": "application/json"}),
+            body: week
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())   
+    }
+
+    searchWeeks(forUser?) {
+        let params = new URLSearchParams();
+        if(forUser)
+            params.set(forUser, forUser);
+
+        let requestOptions = new RequestOptions({
+            method: 'GET',
+            url: '/weeks/search',
+            headers: new Headers({"Content-Type": "application/json"}),
+            params: params
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())   
+    }
+
+    addEffort(effort) {
+        let requestOptions = new RequestOptions({
+            method: 'POST',
+            url: '/effort/create',
+            headers: new Headers({"Content-Type": "application/json"}),
+            body: effort
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())   
+    }
 }

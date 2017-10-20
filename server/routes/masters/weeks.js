@@ -5,7 +5,7 @@ const authMiddleware = require('../../utility/auth');
 const messages = JSON.parse(fs.readFileSync('./server/utility/messages.json'));
 
 function findAndReturnWeeks(req, res, query) {
-  req.app.db.collection("weeks").find(query).toArray(function(weeks) {
+  req.app.db.collection("weeks").find(query).toArray().then(function(weeks) {
     if (weeks.length == 0)
       return res.status(204).json();
 
@@ -30,7 +30,7 @@ router.post("/create", authMiddleware.auth, function(req, res) {
   } else if (!req.body.fromDate || !req.body.toDate) {
 
   } else {
-    let fDate = res.body.fromDate;
+    let fDate = req.body.fromDate;
     let tDate = req.body.toDate;
     let today = new Date();
     let exactDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -50,9 +50,7 @@ router.post("/create", authMiddleware.auth, function(req, res) {
       upsert: true,
       returnOriginal: true
     }).then(function(week) {
-      if (week) {
-        week.weekId = week._id;
-        delete week._id;
+      if (!week.value) {
         res.status(201).json(week);
       } else {
         res.status(400).json({

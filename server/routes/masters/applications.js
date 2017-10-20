@@ -17,7 +17,7 @@ router.post("/create", authMiddleware.auth, function(req, res) {
     })
   } else {
 
-    req.app.db.findOne({ emailId: req.body.ownerEmailId }, { fields: { _id: 1 } }).then(function(user) {
+    req.app.db.collection("users").findOne({ emailId: req.body.ownerEmailId }, { fields: { _id: 1 } }).then(function(user) {
       if (user) {
         var app = {
           applicationName: req.body.applicationName,
@@ -91,31 +91,33 @@ router.put("/update/:appId", authMiddleware.auth, function(req, res) {
 
 //Search application
 router.get("/search", authMiddleware.auth, function(req, res) {
+
   if (!req.session.isAdmin) {
-    res.status(403).json({
-      message: messages.notAuthorized
-    });
+    var query = {
+      ownerEmailId: req.session.emailId
+    };
   } else {
     var query = {};
     if (req.query.ownerEmailId) query.ownerEmailId = req.query.ownerEmailId;
     if (req.query.applicationName) query.applicationName = new RegExp(req.query.applicationName, "i");
-    req.app.db.find(query).toArray().then(function(apps) {
-      if (apps.length == 0) {
-        res.status(204).json();
-      } else {
-        for (var i = 0; i < apps.length; i++) {
-          apps[i].appId = apps[i]._id;
-          delete apps[i]._id;
-        }
-
-        res.status(200).json(apps);
-      }
-    }).catch(function(err) {
-      res.status(500).json({
-        message: messages.ise
-      });
-    })
   }
+
+  req.app.db.collection("applications").find(query).toArray().then(function(apps) {
+    if (apps.length == 0) {
+      res.status(204).json();
+    } else {
+      for (var i = 0; i < apps.length; i++) {
+        apps[i].appId = apps[i]._id;
+        delete apps[i]._id;
+      }
+
+      res.status(200).json(apps);
+    }
+  }).catch(function(err) {
+    res.status(500).json({
+      message: messages.ise
+    });
+  })
 })
 
 router.post("/message", authMiddleware.auth, function(req, res) {

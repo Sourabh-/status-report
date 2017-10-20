@@ -168,7 +168,7 @@ router.get("/search", authMiddleware.auth, function(req, res) {
 })
 
 router.post("/assign", authMiddleware.auth, function(req, res) {
-  if (!req.session.admin) {
+  if (!req.session.isAdmin) {
     res.status(403).json({
       message: messages.notAuthorized
     });
@@ -185,7 +185,7 @@ router.post("/assign", authMiddleware.auth, function(req, res) {
       if (user) {
         req.app.db.collection("applications").findOne({ _id: ObjectID(req.body.appId) }, { fields: { _id: 1 } }).then(function(app) {
           if (app) {
-            req.db.collection("assignedUsers").insertOne({
+            req.app.db.collection("assignedUsers").insertOne({
               appId: ObjectID(req.body.appId),
               emailId: req.body.emailId
             }).then(function(reslt) {

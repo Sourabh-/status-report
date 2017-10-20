@@ -7,11 +7,11 @@ var ObjectID = require('mongodb').ObjectID;
 
 //Add effort
 router.post("/create", authMiddleware.auth, function(req, res) {
-  if (!req.body.weekId || !req.body.noOfHours || !req.body.appId) {
+  if (!req.body.weekId || typeof req.body.noOfHours == 'undefined' || !req.body.appId) {
     res.status(400).json({
       message: messages.invalidParameters
     })
-  } else if (typeof req.body.noOfHours != number || req.body.noOfHours > 168) {
+  } else if (typeof req.body.noOfHours != 'number' || req.body.noOfHours > 168) {
     res.status(400).json({
       message: messages.invalidHours
     })
