@@ -5,6 +5,25 @@ const authMiddleware = require('../../utility/auth');
 const messages = JSON.parse(fs.readFileSync('./server/utility/messages.json'));
 var ObjectID = require('mongodb').ObjectID;
 
+
+returnApps = (req, res, query) => {
+  req.app.db.collection("applications").find(query).toArray().then(function(apps) {
+    if (apps.length) {
+      for(let i=0; i<apps.length; i++) {
+        apps[i].appId = apps[i]._id;
+        delete apps[i]._id;
+      }
+      res.status(200).json(apps);
+    } else {
+      res.status(204).json();
+    }
+  }).catch(function(err) {
+    res.status(500).json({
+      message: messages.ise
+    });
+  })
+};
+
 //Add new application
 router.post("/create", authMiddleware.auth, function(req, res) {
   if (!req.session.isAdmin) {
@@ -91,33 +110,32 @@ router.put("/update/:appId", authMiddleware.auth, function(req, res) {
 
 //Search application
 router.get("/search", authMiddleware.auth, function(req, res) {
+  if (!req.session.isAdmin || req.query.assigneeEmailId) {
+    req.app.db.collection("assignedUsers").find({
+      emailId: !req.session.isAdmin ? req.session.emailId : req.query.assigneeEmailId
+    }).toArray().then(function(docs) {
+      if (docs.length == 0) {
+        res.status(204).json();
+      } else {
+        var appIds = docs.map((v) => {
+          return v.appId;
+        });
 
-  if (!req.session.isAdmin) {
-    var query = {
-      ownerEmailId: req.session.emailId
-    };
+        returnApps(req, res, {
+          _id: { $in: appIds } 
+        });
+      }
+    }).catch(function(err) {
+      res.status(500).json({
+        message: messages.ise
+      })
+    })
   } else {
     var query = {};
-    if (req.query.ownerEmailId) query.ownerEmailId = req.query.ownerEmailId;
-    if (req.query.applicationName) query.applicationName = new RegExp(req.query.applicationName, "i");
+    if (req.query.ownerEmailId) query["ownerEmailId"] = req.query.ownerEmailId;
+    if (req.query.applicationName) query["applicationName"] = new RegExp("^" + req.query.applicationName + "$", 'i');
+    returnApps(req, res, query);
   }
-
-  req.app.db.collection("applications").find(query).toArray().then(function(apps) {
-    if (apps.length == 0) {
-      res.status(204).json();
-    } else {
-      for (var i = 0; i < apps.length; i++) {
-        apps[i].appId = apps[i]._id;
-        delete apps[i]._id;
-      }
-
-      res.status(200).json(apps);
-    }
-  }).catch(function(err) {
-    res.status(500).json({
-      message: messages.ise
-    });
-  })
 })
 
 router.post("/message", authMiddleware.auth, function(req, res) {
@@ -136,9 +154,19 @@ router.post("/message", authMiddleware.auth, function(req, res) {
     }, { fields: { _id: 1 } }).then(function(app) {
       if (app) {
         let mailOptions = {
-          to: req.body.emailId,
+          to: req.body.ownerEmailId,
           subject: 'Report- Message Received',
-          html: '<b>Hi,</b><br/>Following message is sent to you from <i><b>' + req.session.emailId + '</b></i>:<br/><br/><i><b>' + req.body.message + '</b></i>' // html body
+          html: `<b>Hi,</b>
+                 <br/><br/>
+                 Following message is sent to you from 
+                 <i><b>${req.session.emailId}</b></i>:
+                 <br/><br/>
+                 <i><b>${req.body.message}</b></i>
+                 <br/><br/>
+                 Best regards!
+                 <br/>
+                 Report Team
+                 ` // html body
         };
 
         req.app.mailer.sendMail(mailOptions, function(err, response) {

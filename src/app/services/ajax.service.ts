@@ -184,4 +184,19 @@ export class AjaxService {
         return this.http.request(new Request(requestOptions))
         .map((res: Response) => res.json())   
     }
+
+    noteToOwner(appId, message, ownerEmailId) {
+        let requestOptions = new RequestOptions({
+            method: 'POST',
+            url: '/applications/message',
+            headers: new Headers({"Content-Type": "application/json"}),
+            body: {
+                appId: appId,
+                message: message,
+                ownerEmailId: ownerEmailId
+            }
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())   
+    }
 }
