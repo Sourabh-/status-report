@@ -7,9 +7,11 @@ const authMiddleware = require('../../utility/auth');
 var randomstring = require("randomstring");
 const messages = JSON.parse(fs.readFileSync('./server/utility/messages.json'));
 var ObjectID = require('mongodb').ObjectID;
+const config = JSON.parse(fs.readFileSync("./config.json"));
 
 //=============COMMON FUNCTIONALITY=============//
 function findUserAndReturn(req, res, query) {
+  query['$or'] = [{ archived: { $exists: false } }, { archived: false }];
   req.app.db.collection("users").find(query, {
     fields: { emailId: 1, name: 1, dob: 1, isAdmin: 1, thumbnail: 1, designation: 1, createdOn: 1 }
   }).toArray().then(function(docs) {
@@ -61,7 +63,7 @@ router.post("/create", authMiddleware.auth, function(req, res) {
                <br/>
                Password: <b>${pwd}</b>
                <br/><br/>
-               We suggest you to change your password after login.
+               We suggest you to change your password after login. Please login <a href="${config.server.externalUrl}">here.</a>
                <br/><br/>
                Best regards!
                <br/>
@@ -105,7 +107,7 @@ router.put("/update/:emailId", authMiddleware.auth, function(req, res) {
     if (req.body.designation) user.designation = req.body.designation;
     if (req.body.thumbnail) user.thumbnail = req.body.thumbnail;
 
-    req.app.db.collection("users").findOneAndUpdate({ emailId: req.params.emailId }, { $set: user }, {
+    req.app.db.collection("users").findOneAndUpdate({ emailId: req.params.emailId, $or: [{ archived: { $exists: false } }, { archived: false }] }, { $set: user }, {
       projection: { emailId: 1, name: 1, dob: 1, isAdmin: 1, thumbnail: 1, designation: 1 },
       returnOriginal: false
     }).then(function(reslt) {

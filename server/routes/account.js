@@ -12,7 +12,7 @@ var randomstring = require("randomstring");
 router.post("/session/create", function(req, res) {
   //If email and password is sent
   if (req.body.emailId && req.body.password) {
-    req.app.db.collection("users").find({ emailId: req.body.emailId }).limit(1).project({ _id: 0 }).toArray().then(function(docs) {
+    req.app.db.collection("users").find({ emailId: req.body.emailId, $or: [{ archived: { $exists: false } }, { archived: false }] }).limit(1).project({ _id: 0 }).toArray().then(function(docs) {
       if (docs.length == 0) {
         res.status(401).json({
           message: messages.noEmailMatch
