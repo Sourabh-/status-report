@@ -79,31 +79,4 @@ router.get("/apps/hours", authMiddleware.auth, function(req, res) {
   }
 })
 
-router.get("/users/days", authMiddleware.auth, function(req, res) {
-  if (!req.session.isAdmin) {
-    res.status(403).json({
-      message: messages.notAuthorized
-    });
-  } else {
-    let noOfDays = req.query.noOfDays || 30;
-    let createdOn = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
-    //Get users data
-    req.app.db.collection("users").find({ createdOn: { $gt: createdOn } })
-      .project({ name: 1, createdOn: 1 })
-      .toArray()
-      .then(function(users) {
-      	if(users.length) {
-      		res.status(200).json(users);
-      	} else {
-      		res.status(204).json();
-      	}
-      })
-      .catch(function(err) {
-        res.status(500).json({
-          message: messages.ise
-        })
-      })
-  }
-})
-
 module.exports = router;

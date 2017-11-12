@@ -168,7 +168,14 @@ body {
   width: 100%;
 }
 
-
+.com-logo {
+  width: 30px;
+  height: 30px;
+  float: right;
+  margin-right: 10px;
+  border-radius: 50%;
+  margin-top: -3px;
+}
 
 
 /*OVERRIDE CSS*/

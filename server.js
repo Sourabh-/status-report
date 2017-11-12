@@ -74,8 +74,8 @@ var smtpTransport = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
     auth: {
-        user: "utilizationapp@gmail.com",
-        pass: "utilization123"
+        user: config.smtpEmail.email,
+        pass: config.smtpEmail.pass
     }
 });
 
@@ -83,7 +83,7 @@ app.mailer = smtpTransport;
 /**
  * Get port from environment and store in Express.
  */
-const port = process.env.PORT || '4000';
+const port = config.server.port || '4000';
 app.set('port', port);
 
 /**

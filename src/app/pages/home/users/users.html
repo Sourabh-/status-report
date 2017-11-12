@@ -35,7 +35,7 @@
             <div class="form-check col-md-5">
               <br/>
               <label class="form-check-label">
-                <input id="isAdmin" type="checkbox" class="form-check-input" name="isAdmin" [(ngModel)]="user.isAdmin" #isAdmin="ngModel" (ngModelChange)="confirmAdminPopup($event, confirm)"> Is Admin ?
+                <input id="isAdmin" type="checkbox" class="form-check-input" name="isAdmin" [(ngModel)]="user.isAdmin" #isAdmin="ngModel" (ngModelChange)="confirmAdminPopup($event, confirm)"> Is Project Manager/Owner ?
               </label>
             </div>
             <div class="form-group col-md-12 col-xs-12 text-danger" *ngIf="isError">

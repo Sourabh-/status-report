@@ -3,6 +3,7 @@
     <li class="nav-item menu-item" (click)="expandOrCollapse()">
       <div class="menu-item-div" [ngClass]="{'menu-item-div-small': !expanded}">
         <span class="oi oi-menu"></span>
+        <img class="com-logo" src="../../../assets/images/genpactLogo.png" [ngClass]="{'hide': !expanded}"/>
       </div>
       <hr class="hr-divider" />
     </li>
@@ -17,7 +18,7 @@
         <br/>
         <span style="font-size: 12px">{{profile.designation}}</span>
         <br/>
-        <span style="font-size: 12px">GoodWorkLabs Services Private Limited</span>
+        <span style="font-size: 12px">Genpact Headstrong <br/> Capital Markets</span>
       </div>
     </div>
   </div>

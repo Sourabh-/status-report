@@ -59,7 +59,7 @@
           <div class="form-group col-md-12 col-xs-12">
             <label class="col-form-label">Add Week</label>
             <br/>
-            <ngb-datepicker #dp [minDate]="minDate" ngModel [displayMonths]="2" (ngModelChange)="onDateChange($event)" [navigation]="select" [dayTemplate]="t"></ngb-datepicker>
+            <ngb-datepicker #dp ngModel [displayMonths]="2" (ngModelChange)="onDateChange($event)" [navigation]="select" [dayTemplate]="t"></ngb-datepicker>
             <ng-template #t let-date="date" let-focused="focused">
               <span class="custom-day" [class.focused]="focused" [class.range]="isFrom(date) || isTo(date) || isInside(date) || isHovered(date)" [class.faded]="isHovered(date) || isInside(date)" (mouseenter)="hoveredDate = date" (mouseleave)="hoveredDate = null" [class.text-muted]="isLessThanToday(date)">
                 {{ date.day }}
