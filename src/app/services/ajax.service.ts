@@ -199,4 +199,19 @@ export class AjaxService {
         return this.http.request(new Request(requestOptions))
         .map((res: Response) => res.json())   
     }
+
+    fetchGraph(url, query = {}) {
+        let params = new URLSearchParams();
+        for(var key in query)
+            params.set(key, query[key]);
+
+        let requestOptions = new RequestOptions({
+            method: 'GET',
+            url: url,
+            headers: new Headers({"Content-Type": "application/json"}),
+            params: params
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())
+    }
 }

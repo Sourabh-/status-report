@@ -47,7 +47,7 @@ export class EffortComponent implements OnInit {
 	        	for(var i=0; i<data.length; i++) {
 	        		let fDate = new Date(data[i].fromDate);
 	        		let tDate = new Date(data[i].toDate);
-	        		data[i].name = (fDate.getDate() + "/" + (fDate.getMonth() + 1) + "/" + fDate.getFullYear()) + " - " + (fDate.getDate() + "/" + (fDate.getMonth() + 1) + "/" + fDate.getFullYear());
+	        		data[i].name = (fDate.getDate() + "/" + (fDate.getMonth() + 1) + "/" + fDate.getFullYear()) + " - " + (tDate.getDate() + "/" + (tDate.getMonth() + 1) + "/" + tDate.getFullYear());
 	        	}
 	        	this.weeks = data;
 	        }

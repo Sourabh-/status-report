@@ -30,7 +30,13 @@ router.post("/create", authMiddleware.auth, function(req, res) {
         //Check if week exists
         req.app.db.collection("weeks").findOne({ _id: ObjectID(req.body.weekId) }, {}).then(function(week) {
           if (week) {
-            req.app.db.collection("effort").insertOne({ appId: ObjectID(req.body.appId), weekId: ObjectID(req.body.weekId), noOfHours: req.body.noOfHours, emailId: req.session.emailId }).then(function(reslt) {
+            req.app.db.collection("effort").insertOne({ 
+              appId: ObjectID(req.body.appId), 
+              weekId: ObjectID(req.body.weekId), 
+              noOfHours: req.body.noOfHours, 
+              emailId: req.session.emailId,
+              createdOn: new Date().getTime() 
+            }).then(function(reslt) {
               res.status(201).json(req.body);
             }).catch(function(err) {
               (err.code == 11000) ? res.status(400).json({

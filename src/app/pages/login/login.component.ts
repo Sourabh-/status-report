@@ -63,11 +63,9 @@ export class LoginComponent {
 	handleForgotPasswordSubmit(f: NgForm) {
 		if(f.valid) {
 			this.isErrorInModal = false;
-			console.log("HERE12");
 			this.ajaxService.forgotPassword(f.value.emailId)
 			.subscribe(
 				data => {
-					console.log("HERE");
 					this.modalRef.close();
 					this.utilities.alertMessage = "New password sent to your emailId.";
 					this.utilities.showAlertMsg = true;

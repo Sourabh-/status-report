@@ -70,9 +70,9 @@
           </div>
         </div>
     </div>
+    <div class="modal-footer">
+      <button type="submit" class="btn btn-primary" [disabled]="!forgotPwdForm.form.valid">Change Password</button>
+      <button type="button" class="btn btn-secondary" (click)="c()">Close</button>
+    </div>
   </form>
-  <div class="modal-footer">
-    <button type="submit" class="btn btn-primary" [disabled]="!forgotPwdForm.form.valid">Change Password</button>
-    <button type="button" class="btn btn-secondary" (click)="c()">Close</button>
-  </div>
 </ng-template>

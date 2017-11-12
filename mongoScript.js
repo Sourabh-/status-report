@@ -27,7 +27,7 @@ rl.question('Enter Mongo Host: ', (host) => {
               process.exit();
             }
 
-            db.collection("effort").createIndex({ appId: 1, weekId: 1 }, { unique: true }, function(err, indexName) {
+            db.collection("effort").createIndex({ appId: 1, weekId: 1, emailId: 1 }, { unique: true }, function(err, indexName) {
               if (err) {
                 console.log("ERROR OCCURRED WHILE ADDING CONSTRAINT IN EFFORT! ABORTING!!!!!");
                 process.exit();

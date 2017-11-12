@@ -17,6 +17,7 @@ const applications = require('./server/routes/masters/applications');
 const weeks = require('./server/routes/masters/weeks');
 const designations = require('./server/routes/masters/designations');
 const effort = require('./server/routes/effort');
+const graphs = require('./server/routes/graphs');
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/applications', applications);
 app.use('/weeks', weeks);
 app.use('/effort', effort);
 app.use('/designations', designations);
+app.use('/graphs', graphs);
 
 // Catch all other routes and return the index file
 app.get('*', (req, res) => {
@@ -72,8 +74,8 @@ var smtpTransport = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
     auth: {
-        user: "shibadebnath@gmail.com",
-        pass: "facedifficulties"
+        user: "",
+        pass: ""
     }
 });
 
