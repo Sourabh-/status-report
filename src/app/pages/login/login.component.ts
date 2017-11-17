@@ -38,6 +38,8 @@ export class LoginComponent {
 			.subscribe(
 				data => {
 					this.afterLogin();
+					localStorage.image = data.image;
+					delete data.image;
 					this.utilities.setCookie("profile", JSON.stringify(data));
 					this.router.navigate(['/home']);
 				},

@@ -20,6 +20,7 @@ import { AuthGuard } from './services/authGuard.service';
 import { AmChartsModule } from "@amcharts/amcharts3-angular";
 import { Ng2TableModule } from 'ng2-table/ng2-table';
 import { PaginationModule, TabsModule } from 'ng2-bootstrap';
+import { DataTableModule } from "angular2-datatable";
 
 const appRoutes: Routes = [
   {
@@ -67,7 +68,8 @@ const appRoutes: Routes = [
     AmChartsModule,
     Ng2TableModule,
     PaginationModule.forRoot(),
-    TabsModule
+    TabsModule,
+    DataTableModule
   ],
   providers: [
     Utilities, AuthGuard

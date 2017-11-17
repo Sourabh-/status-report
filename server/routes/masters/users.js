@@ -220,4 +220,59 @@ router.post("/assign", authMiddleware.auth, function(req, res) {
   }
 })
 
+router.delete("/delete/:emailId", authMiddleware.auth, function(req, res) {
+  if (!req.session.isAdmin) {
+    res.status(403).json({
+      message: messages.notAuthorized
+    });
+  } else if(req.session.emailId == req.params.emailId) {
+    res.status(403).json({
+      message: messages.cannotDelSelf
+    })
+  } else {
+    req.app.db.collection("users").findOneAndUpdate({ 
+      emailId: req.params.emailId
+    }, {
+      $set: { archived: true }
+    }, {
+      projection: { emailId: 1 },
+      returnOriginal: false
+    }).then(function(reslt) {
+      if (reslt.value) {
+        res.status(204).json();
+      } else {
+        res.status(400).json({
+          message: messages.noEmailMatch
+        })
+      }
+    }).catch(function(err) {
+      console.log(err);
+      res.status(500).json({
+        message: messages.ise
+      })
+    })
+  }
+})
+
+router.put("/image", authMiddleware.auth, function(req, res) {
+  if(!req.body.image) {
+    res.status(400).json({
+      message: messages.invalidParameters
+    })
+  } else {
+    req.app.db.collection("users").updateOne({emailId: req.session.emailId}, {
+      $set: {
+        image: req.body.image
+      }
+    }).then(function(rslt) {
+      res.status(204).json();
+    }).catch(function(err) {
+      console.log(err);
+      res.status(500).json({
+        message: messages.ise
+      })
+    })
+  }
+})
+
 module.exports = router;

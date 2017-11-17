@@ -13,5 +13,6 @@
 	"invalidHours": "Invalid number of hours",
 	"effortExists": "Effort already exists for given week and application",
 	"desigExists": "Designation already exists",
-	"userAlreadyAssigned": "User already assigned"
+	"userAlreadyAssigned": "User already assigned",
+	"cannotDelSelf": "You cannot delete your own user"
 }

@@ -214,4 +214,27 @@ export class AjaxService {
         return this.http.request(new Request(requestOptions))
         .map((res: Response) => res.json())
     }
+
+    deleteUser(emailId) {
+        let requestOptions = new RequestOptions({
+            method: 'DELETE',
+            url: '/users/delete/' + encodeURIComponent(emailId),
+            headers: new Headers({"Content-Type": "application/json"})
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())
+    }
+
+    changeImage(image) {
+        let requestOptions = new RequestOptions({
+            method: 'PUT',
+            url: '/users/image',
+            headers: new Headers({"Content-Type": "application/json"}),
+            body: {
+                image: image,
+            }
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())   
+    }
 }

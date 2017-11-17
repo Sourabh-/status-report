@@ -11,7 +11,7 @@
   <div class="profile container-fluid" (click)="openProfileModal(profileModal)">
     <div class="row">
       <div class="col-lg-4 col-md-4 col-sm-5 col-6">
-        <img src="../../../assets/images/user.png" class="rounded-circle profileImageLarge trans" [ngClass]="{'profileImageSmall': !expanded}" />
+        <img [src]="profile.image || '../../../assets/images/user.png'" class="rounded-circle profileImageLarge trans" [ngClass]="{'profileImageSmall': !expanded}" />
       </div>
       <div class="col-lg-8 col-md-8 col-sm-7 col-6 white" [ngClass]="{'hide': !expanded}">
         <b>{{profile.name}}</b>
@@ -82,11 +82,11 @@
   <div class="modal-body">
     <div class="row">
       <div class="col-lg-4 col-md-4 col-sm-5 col-6">
-        <img src="../../../assets/images/user-large.png" class="profile-image" />
+        <img [src]="profile.image || '../../../assets/images/user-large.png'" class="profile-image" />
         <br/>
         <div style="padding-left: 15px">
-          <a href="javascript:document.querySelector('input#fileInput').click()" class="small-font-size">Update Photo</a>
-          <input id="fileInput" style="display: none" type="file" accept="image/*" />
+          <a href="javascript:document.querySelector('input#fileInput').click()" class="small-font-size">Change Photo</a>
+          <input id="fileInput" style="display: none" type="file" accept="image/*" (change)="changeProfilePhoto($event)"/>
         </div>
       </div>
       <div class="col-lg-8 col-md-8 col-sm-7 col-6">
@@ -97,6 +97,12 @@
         <span class="text-primary" style="font-size: 12px">{{profile.emailId}}</span>
         <br/>
         <span style="font-size: 12px">GoodWorkLabs Services Private Limited</span>
+      </div>
+    </div>
+    <div class="row" *ngIf="isProfileError">
+      <div class="col-md-12 col-xs-12 col-12">
+        <br>
+        <span class="text-danger">{{profileErrorMsg}} *</span>
       </div>
     </div>
   </div>

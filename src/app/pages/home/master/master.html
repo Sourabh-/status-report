@@ -10,12 +10,38 @@
           </div>
         </div>
         <br/>
-        <ng-table [config]="appTable.config" (tableChanged)="onChangeTable(appTable.config, '', 'appTable')" (cellClicked)="onCellClick($event)" [rows]="appTable.rows" [columns]="appTable.columns">
-        </ng-table>
-        <div class="text-right">
-          <pagination *ngIf="appTable.config.paging" class="pagination-sm" [(ngModel)]="appTable.page" [totalItems]="appTable.length" [itemsPerPage]="appTable.itemsPerPage" [maxSize]="appTable.maxSize" [boundaryLinks]="true" [rotate]="false" (pageChanged)="onChangeTable(userTable.config, $event, 'userTable')" (numPages)="appTable.numPages = $event">
-          </pagination>
-        </div>
+        <table class="table table-striped" [mfData]="appsTableData" #mf="mfDataTable" [mfRowsOnPage]="5">
+              <thead class="thead-dark">
+                <tr>
+                    <th style="width: 35%">
+                        <mfDefaultSorter by="applicationName">Name</mfDefaultSorter>
+                    </th>
+                    <th style="width: 35%">
+                        <mfDefaultSorter by="description">Description</mfDefaultSorter>
+                    </th>
+                    <th style="width: 30%">
+                        <mfDefaultSorter by="ownerEmailId">Owner</mfDefaultSorter>
+                    </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of mf.data">
+                    <td>{{item.applicationName}}</td>
+                    <td>{{item.description}}</td>
+                    <td>{{item.ownerEmailId}}</td>
+                </tr>
+                <tr *ngIf="!appsTableData || (appsTableData && !appsTableData.length)">
+                  <td colspan="3" class="text-center">No applications added!</td>
+                </tr>
+              </tbody>
+              <tfoot>
+              <tr>
+                  <td colspan="4">
+                      <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
+                  </td>
+              </tr>
+              </tfoot>
+          </table>
       </div>
     </ng-template>
   </ngb-tab>

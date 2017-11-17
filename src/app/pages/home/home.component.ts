@@ -20,6 +20,8 @@ export class HomeComponent implements OnInit {
 	public profile: any;
 	public isError: boolean = false;
 	public errorMsg: string = '';
+	public isProfileError: boolean = false;
+	public profileErrorMsg: string = '';
 
 	clickedMap = {
 		'dashboard': 'Dashboard',
@@ -34,6 +36,7 @@ export class HomeComponent implements OnInit {
 
 	ngOnInit() {
 		this.profile = JSON.parse(this.utilities.getCookie("profile"));
+		this.profile.image = localStorage.image;
 		switch(this.router.url) {
 			case '/home/dashboard':
 				this.clicked = 'dashboard';
@@ -71,6 +74,7 @@ export class HomeComponent implements OnInit {
 	}
 
 	openProfileModal(profileModal) {
+		this.isProfileError = false;
 		this.modalRef = this.modalService.open(profileModal);
 		this.expanded = false;
 	}
@@ -112,6 +116,32 @@ export class HomeComponent implements OnInit {
 					}
 				)
 			}
+		}
+	}
+
+	changeProfilePhoto(e) {
+		let self = this;
+		if(e.target.files[0].size >= 200000) {
+			this.profileErrorMsg = "Image size cannot be more than 200kb";
+			this.isProfileError = true;
+		} else {
+			this.isProfileError = false;
+			let reader = new FileReader();
+            reader.onload = function (ev:any) {
+                self.ajaxService.changeImage(ev.target.result)
+                .subscribe(
+                	data => {
+                		self.profile.image = ev.target.result;
+                		localStorage.image = ev.target.result;
+                		self.utilities.setCookie("profile", JSON.stringify(self.profile));
+                	},
+                	error => {
+                		self.isProfileError = true;
+						self.profileErrorMsg = error.json() && error.json().message ? error.json().message : "Something isn't right. Try after sometime.";
+                	}
+                );
+            };   
+                reader.readAsDataURL(e.target.files[0]);
 		}
 	}
 }
