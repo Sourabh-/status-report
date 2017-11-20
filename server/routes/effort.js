@@ -66,6 +66,55 @@ router.post("/create", authMiddleware.auth, function(req, res) {
       });
     })
   }
-})
+});
+
+router.post("/jira/count/create", authMiddleware.auth, function(req, res) {
+  if(!req.body.month || !req.body.year || !req.body.totalJiraTickets || !req.body.closedJiraTickets || !req.body.appId) {
+    res.status(400).json({
+      message: messages.invalidParameters
+    });
+  } else if(!ObjectID.isValid(req.body.appId)) {
+    res.status(400).json({
+      message: messages.invalidApp
+    })
+  } else {
+    //Check if app exists
+    req.app.db.collection("applications").findOne({ _id: ObjectID(req.body.appId) }, {}).then(function(app) {
+      if (app) {
+        req.app.db.collection("jiraTickets").findOneAndUpdate({
+          emailId: req.session.emailId,
+          appId: ObjectID(req.body.appId),
+          month: req.body.month,
+          year: req.body.year
+        }, {
+          $set: {
+            emailId: req.session.emailId,
+            appId: ObjectID(req.body.appId),
+            month: req.body.month,
+            year: req.body.year,
+            totalJiraTickets: req.body.totalJiraTickets,
+            closedJiraTickets: req.body.openJiraTickets
+          }
+        }, {
+          upsert: true
+        }).then(function(reslt) {
+          res.status(201).json(reslt.value);
+        }).catch(function(err) {
+          res.status(500).json({
+            message: messages.ise
+          });
+        })
+      } else {
+        res.status(400).json({
+          message: messages.invalidApp
+        })
+      }
+    }).catch(function(err) {
+      res.status(500).json({
+        message: messages.ise
+      });
+    })
+  }
+});
 
 module.exports = router;

@@ -237,4 +237,21 @@ export class AjaxService {
         return this.http.request(new Request(requestOptions))
         .map((res: Response) => res.json())   
     }
+
+    addJiraTickets(appId, month, year, totalJiraTickets, closedJiraTickets) {
+        let requestOptions = new RequestOptions({
+            method: 'POST',
+            url: '/effort/jira/count/create',
+            headers: new Headers({"Content-Type": "application/json"}),
+            body: {
+                appId: appId,
+                month: month,
+                year: year,
+                totalJiraTickets: totalJiraTickets,
+                closedJiraTickets: closedJiraTickets
+            }
+        });
+        return this.http.request(new Request(requestOptions))
+        .map((res: Response) => res.json())   
+    }
 }

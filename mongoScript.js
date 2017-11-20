@@ -61,38 +61,46 @@ rl.question('Enter Mongo Host: ', (host) => {
                               process.exit();
                             }
                             console.log("Holidays index created.");
-                            console.log("Creating assignedUsers index...");
-                            db.collection("assignedUsers").createIndex({ appId: 1, emailId: 1 }, { unique: true }, function(err, indexName) {
+                            console.log("Creating jiraTickets index...");
+                            db.collection("jiraTickets").createIndex({ appId: 1, emailId: 1, month: 1, year: 1 }, { unique: true }, function(err, indexName) {
                               if (err) {
-                                console.log("ERROR OCCURRED WHILE ADDING CONSTRAINT IN ASSIGNEDUSERS! ABORTING!!!!!");
+                                console.log("ERROR OCCURRED WHILE ADDING CONSTRAINT IN JIRATICKETS! ABORTING!!!!!");
                                 process.exit();
                               }
-                              console.log("AssignedUsers index created.");
-                              console.log("Creating first user...");
-                              let date = dob.split("/");
-                              let pwd = randomstring.generate(7);
-                              let salt = bcrypt.genSaltSync(saltRounds);
-                              //Create first ADMIN USER
-                              db.collection("users").insertOne({
-                                "password" : bcrypt.hashSync(pwd, salt),
-                                "name" : uname,
-                                "emailId" : emailId,
-                                "dob" : new Date(date[2], date[1]-1, date[0]).getTime(),
-                                "designation" : designation,
-                                "isAdmin" : true,
-                                "pristine": true, //Never logged in
-                                "createdOn" : new Date().getTime()
-                              }).then(function(reslt) {
-                                console.log("First user created. Generated password for first user: " + pwd);
-                                console.log("Use your email Id and generated password to login.");
-                                console.log("We suggest you to change your password after login.");
-                                console.log("Exiting...");
-                                rl.close();
-                                process.exit();
-                              }).catch(function() {
-                                console.log("Error ocurred: " + err);
-                                rl.close();
-                                process.exit();
+                              console.log("JiraTickets index created.");
+                              console.log("Creating assignedUsers index...");
+                              db.collection("assignedUsers").createIndex({ appId: 1, emailId: 1 }, { unique: true }, function(err, indexName) {
+                                if (err) {
+                                  console.log("ERROR OCCURRED WHILE ADDING CONSTRAINT IN ASSIGNEDUSERS! ABORTING!!!!!");
+                                  process.exit();
+                                }
+                                console.log("AssignedUsers index created.");
+                                console.log("Creating first user...");
+                                let date = dob.split("/");
+                                let pwd = randomstring.generate(7);
+                                let salt = bcrypt.genSaltSync(saltRounds);
+                                //Create first ADMIN USER
+                                db.collection("users").insertOne({
+                                  "password" : bcrypt.hashSync(pwd, salt),
+                                  "name" : uname,
+                                  "emailId" : emailId,
+                                  "dob" : new Date(date[2], date[1]-1, date[0]).getTime(),
+                                  "designation" : designation,
+                                  "isAdmin" : true,
+                                  "pristine": true, //Never logged in
+                                  "createdOn" : new Date().getTime()
+                                }).then(function(reslt) {
+                                  console.log("First user created. Generated password for first user: " + pwd);
+                                  console.log("Use your email Id and generated password to login.");
+                                  console.log("We suggest you to change your password after login.");
+                                  console.log("Exiting...");
+                                  rl.close();
+                                  process.exit();
+                                }).catch(function() {
+                                  console.log("Error ocurred: " + err);
+                                  rl.close();
+                                  process.exit();
+                                })
                               })
                             })
                           })

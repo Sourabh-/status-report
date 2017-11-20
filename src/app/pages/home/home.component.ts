@@ -36,7 +36,7 @@ export class HomeComponent implements OnInit {
 
 	ngOnInit() {
 		this.profile = JSON.parse(this.utilities.getCookie("profile"));
-		this.profile.image = localStorage.image;
+		this.profile.image = localStorage.image && localStorage.image != 'undefined' ? localStorage.image : "";
 		switch(this.router.url) {
 			case '/home/dashboard':
 				this.clicked = 'dashboard';
