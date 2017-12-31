@@ -3,79 +3,496 @@ const router = express.Router();
 const fs = require('fs');
 const authMiddleware = require('../utility/auth');
 const messages = JSON.parse(fs.readFileSync('./server/utility/messages.json'));
+const mongoWrapper = require('../utility/mongoWrapper');
+var Q = require('q');
 var ObjectID = require('mongodb').ObjectID;
 
-//Fetch recent (given) apps and number of hours worked on them in last number of days (given)
-router.get("/apps/hours", authMiddleware.auth, function(req, res) {
-  if (!req.session.isAdmin) {
-    res.status(403).json({
-      message: messages.notAuthorized
-    });
-  } else {
-    let noOfDays = req.query.noOfDays || 7;
-    let createdOn = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
-    //Get appIds where I am the owner
-    //For those appIds get effort and choose recent apps
-    //For those apps get hours and then their names
-    req.app.db.collection("applications").find({ ownerEmailId: req.session.emailId })
-      .project({ _id: 1, applicationName: 1 })
-      .toArray()
-      .then(function(apps) {
-        if (apps.length) {
-          let appIds = [];
-          for (let i = 0; i < apps.length; i++) {
-            appIds.push(apps[i]._id);
-          }
+const MONTHS = {
+  1: 'January',
+  2: 'Febuary',
+  3: 'March',
+  4: 'April',
+  5: 'May',
+  6: 'June',
+  7: 'July',
+  8: 'August',
+  9: 'September',
+  10: 'October',
+  11: 'November',
+  12: 'December'
+};
 
-          req.app.db.collection("effort").find({ appId: { $in: appIds }, createdOn: { $gt: createdOn } })
-            .sort({ createdOn: -1 })
-            .project({ appId: 1, noOfHours: 1 })
-            .toArray()
-            .then(function(docs) {
-              if (docs.length) {
-                let noOfApps = req.query.noOfApps || 6;
-                let recentAppIds = [];
-                let totalNoOfHours = {};
-                for (let i = 0; i < docs.length; i++) {
-                  let flag = 0;
-                  for (let j = 0; j < recentAppIds.length; j++) {
-                    if (recentAppIds[j].equals(docs[i].appId)) {
-                      flag = 1;
-                      break;
-                    }
-                  }
-                  if (flag == 0 && recentAppIds.length !== noOfApps) {
-                    recentAppIds.push(docs[i].appId);
-                    totalNoOfHours[docs[i].appId + ""] = {
-                      totalNoOfHours: docs[i].noOfHours
-                    }
-                  }
+function getAppEffort(req, res, isAll, appIds) {
+  let noOfDays = req.query.noOfDays || 30;
+  let createdOn = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
+  let noOfApps = req.query.noOfApps || 99;
+  let appQuery = {};
 
-                  if (flag == 1) {
-                    totalNoOfHours[docs[i].appId + ""].totalNoOfHours = totalNoOfHours[docs[i].appId + ""].totalNoOfHours + docs[i].noOfHours;
+  if (isAll) appQuery.ownerEmailId = req.session.emailId;
+  else appQuery._id = { $in: appIds };
+  req.app.db.collection("applications").find(appQuery).limit(noOfApps).toArray().then(function(apps) {
+    if (apps.length) {
+      let appsObj = {};
+      let _appIds = apps.map((v) => {
+        appsObj[v._id] = v.applicationName;
+        return v._id;
+      });
+      let effQuery = { appId: { $in: _appIds }, createdOn: { $gt: createdOn } };
+      if (!isAll) effQuery.emailId = req.session.emailId;
+      req.app.db.collection("effort").find(effQuery).toArray().then(function(eff) {
+        if (eff.length) {
+          let totNoOfHrs = {};
+          let weekIds = [];
+          for (let i = 0; i < eff.length; i++) {
+            if (!totNoOfHrs[eff[i].weekId + ""]) {
+              totNoOfHrs[eff[i].weekId + ""] = {};
+            }
+
+            if (!totNoOfHrs[eff[i].weekId + ""][appsObj[eff[i].appId]]) totNoOfHrs[eff[i].weekId + ""][appsObj[eff[i].appId]] = 0;
+            totNoOfHrs[eff[i].weekId + ""][appsObj[eff[i].appId]] += eff[i].noOfHours;
+            weekIds.push(eff[i].weekId);
+            req.app.db.collection("weeks").find({
+              _id: { $in: weekIds }
+            }).toArray().then(function(weeks) {
+              let result = [];
+              for (let key in totNoOfHrs) {
+                for (let i = 0; i < weeks.length; i++) {
+                  if ((weeks[i]._id + "") == key) {
+                    let tmp = totNoOfHrs[key];
+                    tmp.fromDate = weeks[i].fromDate;
+                    tmp.toDate = weeks[i].toDate;
+                    result.push(tmp);
+                    break;
                   }
                 }
-
-                for (let i = 0; i < apps.length; i++) {
-                  if (totalNoOfHours[apps[i]._id + ""]) {
-                    totalNoOfHours[apps[i]._id + ""].applicationName = apps[i].applicationName;
-                  }
-                }
-
-                res.status(200).json(totalNoOfHours);
-
-              } else {
-                res.status(204).json();
               }
+
+              res.status(200).json(result);
+
             }).catch(function(err) {
               res.status(500).json({
                 message: messages.ise
-              })
+              });
             })
+          }
         } else {
           res.status(204).json();
         }
+      }).catch(function(err) {
+        res.status(500).json({
+          message: messages.ise
+        });
       })
+    } else {
+      res.status(204).json();
+    }
+  }).catch(function(err) {
+    res.status(500).json({
+      message: messages.ise
+    });
+  })
+}
+
+//Fetch recent (given) apps and number of hours worked on them in last number of days (given)
+router.get("/apps/hours", authMiddleware.auth, function(req, res) {
+  let isAdmin = req.session.isAdmin;
+  if (isAdmin && !req.query.self) {
+    //Fetch recent noOfDays applications limit to noOfApps where you are the owner
+    //Fetch recent effort for the above apps
+    //Fetch weeks for those week Ids
+    getAppEffort(req, res, true);
+  } else {
+    //Fetch applications assigned to me
+    //Fetch recent noOfDays applications limit to noOfApps
+    //Fetch recent effort for the above apps
+    //Fetch weeks for those week Ids
+    req.app.db.collection("assignedUsers").find({
+      emailId: req.session.emailId
+    }).toArray().then(function(asUs) {
+      if (asUs.length) {
+        let appIds = asUs.map((v) => v.appId);
+        getAppEffort(req, res, false, appIds);
+      } else {
+        res.status(204).json();
+      }
+    }).catch(function(err) {
+      res.status(500).json({
+        message: messages.ise
+      });
+    })
+  }
+})
+
+function getUserEffort(req, res, isAll, appIds) {
+  let noOfDays = req.query.noOfDays || 30;
+  let createdOn = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
+  let noOfApps = req.query.noOfApps || 99;
+  let appQuery = {};
+
+  if (isAll) appQuery.ownerEmailId = req.session.emailId;
+  else appQuery._id = { $in: appIds };
+  req.app.db.collection("applications").find(appQuery).limit(noOfApps).toArray().then(function(apps) {
+    if (apps.length) {
+      let _appIds = apps.map((v) => v._id);
+      let effQuery = {
+        appId: { $in: _appIds },
+        createdOn: { $gt: createdOn }
+      };
+
+      if (!isAll) effQuery.emailId = req.session.emailId;
+      req.app.db.collection("effort").find(effQuery).toArray().then(function(eff) {
+        if (eff.length) {
+          let totNoOfHrs = {};
+          let weekIds = [];
+          let emailIds = [];
+          for (let i = 0; i < eff.length; i++) {
+            if (!totNoOfHrs[eff[i].weekId + ""]) {
+              totNoOfHrs[eff[i].weekId + ""] = {};
+            }
+
+            if (!totNoOfHrs[eff[i].weekId + ""][eff[i].emailId]) totNoOfHrs[eff[i].weekId + ""][eff[i].emailId] = 0;
+            totNoOfHrs[eff[i].weekId + ""][eff[i].emailId] += eff[i].noOfHours;
+            weekIds.push(eff[i].weekId);
+            emailIds.push(eff[i].emailId);
+          }
+
+          Q.all([
+            mongoWrapper.findAll(req.app.db, "weeks", { _id: { $in: weekIds } }),
+            mongoWrapper.findAll(req.app.db, "users", { _id: { $in: emailIds } })
+          ]).then(function(res) {
+            let result = [];
+            for (let key in totNoOfHrs) {
+              for (let i = 0; i < res[0].length; i++) {
+                let tmp = {};
+                tmp.fromDate = res[0][i].fromDate;
+                tmp.toDate = res[0][i].toDate;
+                let users = {};
+                for (let key2 in totNoOfHrs[key]) {
+                  for (let j = 0; j < res[1].length; j++) {
+                    if (key2 == res[1][j].emailId) {
+                      tmp[res[1][j].name] = totNoOfHrs[key][key2];
+                      break;
+                    }
+                  }
+                }
+                result.push(tmp);
+                break;
+
+                res.status(200).json(result);
+              }
+            }
+
+          }).catch(function(err) {
+            res.status(500).json({
+              message: messages.ise
+            });
+          })
+        } else {
+          res.status(204).json();
+        }
+      }).catch(function(err) {
+        res.status(500).json({
+          message: messages.ise
+        });
+      })
+    } else {
+      res.status(204).json();
+    }
+  }).catch(function(err) {
+    res.status(500).json({
+      message: messages.ise
+    });
+  })
+}
+
+router.get("/users/hours", authMiddleware.auth, function(req, res) {
+  let isAdmin = req.session.isAdmin;
+  if (isAdmin && !req.query.self) {
+    //Fetch recent noOfDays applications limit to noOfApps where you are the owner
+    //Fetch recent effort for the above apps/users
+    //Fetch weeks for those week Ids
+    //Fetch users for those effort/emailIds
+    getUserEffort(req, res, true);
+  } else {
+    //Fetch applications assigned to me
+    //Fetch recent noOfDays applications limit to noOfApps
+    //Fetch recent effort for the above apps
+    //Fetch weeks for those week Ids
+    //Fetch users for those effort/emailIds
+    req.app.db.collection("assignedUsers").find({
+      emailId: req.session.emailId
+    }).toArray().then(function(asUs) {
+      if (asUs.length) {
+        let appIds = asUs.map((v) => v.appId);
+        getUserEffort(req, res, false, appIds);
+      } else {
+        res.status(204).json();
+      }
+    }).catch(function(err) {
+      res.status(500).json({
+        message: messages.ise
+      });
+    })
+  }
+})
+
+function getAppNEffort(req, res, cb) {
+  let isAll = req.session.isAdmin && !req.query.self;
+  req.app.db.collection("applications").findOne({ applicationName: req.params.appName }).then(function(apps) {
+    if (apps.length) {
+      let noOfDays = req.query.noOfDays || 30;
+      let createdOn = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
+      let effQuery = { appId: apps[0]._id, createdOn };
+      if (!isAll) effQuery.emailId = req.session.emailId;
+      req.app.db.collection("effort").find(effQuery).toArray().then(function(effs) {
+        if (effs.length) {
+          let totNoOfHrs = {};
+          let emailIds = [];
+          for (let i = 0; i < effs.length; i++) {
+            if (!totNoOfHrs[effs[i].emailId]) totNoOfHrs[effs[i].emailId] = 0;
+            emailIds.push(effs[i].emailId);
+            totNoOfHrs[effs[i].emailId] += effs[i].noOfHours;
+          }
+
+          req.app.db.collection("users").find({ emailId: { $in: emailIds } }).project({ name: 1, emailId: 1 }).toArray().then(function(usrs) {
+            let result = {
+              appName: req.params.appName,
+              noOfDays,
+              effort: {}
+            };
+
+            for (let i = 0; i < usrs.length; i++) {
+              result.effort[usrs[i].name] = totNoOfHrs[usrs[i].emailId];
+            }
+
+            res.status(200).json(result);
+          }).catch(function(err) {
+            res.status(500).json({
+              message: messages.ise
+            });
+          })
+        } else {
+          res.status(204).json();
+        }
+      }).catch(function(err) {
+        res.status(500).json({
+          message: messages.ise
+        });
+      })
+    } else {
+      res.status(404).json({
+        message: messages.invalidApp
+      })
+    }
+  }).catch(function(err) {
+    res.status(500).json({
+      message: messages.ise
+    });
+  })
+}
+
+router.get("/apps/hours/:appName", authMiddleware.auth, function(req, res) {
+  getEffortForApp(req, res);
+})
+
+function getAllMonths(months, currentMonth, noOfMonths) {
+  if (noOfMonths) {
+    if ((currentMonth - noOfMonths) < 0) {
+      months.push(12 + (currentMonth - noOfMonths));
+    } else
+      months.push(currentMonth - noOfMonths);
+    noOfMonths--;
+    getAllMonths(months, currentMonth, noOfMonths);
+  }
+}
+
+function getAppJiraTickets(req, res, isAll, appIds) {
+  let noOfMonths = req.query.noOfMonths || 1;
+  let currentMonth = new Date().getMonth() + 1;
+  let currentYear = new Date().getFullYear();
+  let months = [currentMonth];
+  let years = [currentYear];
+  if ((currentMonth - noOfMonths) < 0) {
+    years.push(currentYear - 1);
+  }
+
+  getAllMonths(months, currentMonth, noOfMonths);
+  let appQuery = {};
+  if (isAll) appQuery.ownerEmailId = req.session.emailId;
+  else appQuery._id = { $in: appIds };
+  req.app.db.collection("applications").find(appQuery).toArray().then(function(apps) {
+    if (apps.length) {
+      let appsObj = {};
+      let _appIds = apps.map((v) => {
+        appsObj[v._id] = v.applicationName;
+        return v._id;
+      });
+
+      let effQuery = {
+        month: { $in: months },
+        year: { $in: years },
+        appId: { $in: _appIds }
+      };
+
+      if (!isAll) effQuery.emailId = req.session.emailId;
+      req.app.db.collection("jiraTickets").find(effQuery).toArray().then(function(tickets) {
+        if (tickets.length) {
+          let totalTickets = {};
+          for (let i = 0; i < tickets.length; i++) {
+            if (!totalTickets[tickets[i].year]) totalTickets[tickets[i].year] = {};
+            if (!totalTickets[tickets[i].year][MONTHS[tickets[i].month]]) totalTickets[tickets[i].year][MONTHS[tickets[i].month]] = {};
+            if (!totalTickets[tickets[i].year][MONTHS[tickets[i].month]][appsObj[tickets[i].appId]]) {
+              totalTickets[tickets[i].year][MONTHS[tickets[i].month]][appsObj[tickets[i].appId]] = {
+                totalTickets: 0,
+                totalClosedTickets: 0
+              };
+            }
+
+            totalTickets[tickets[i].year][MONTHS[tickets[i].month]][appsObj[tickets[i].appId]].totalTickets += tickets[i].totalJiraTickets;
+            totalTickets[tickets[i].year][MONTHS[tickets[i].month]][appsObj[tickets[i].appId]].totalClosedTickets += tickets[i].closedJiraTickets;
+          }
+
+          res.status(200).json(totalTickets);
+        } else {
+          res.status(204).json();
+        }
+      }).catch(function(err) {
+        res.status(500).json({
+          message: messages.ise
+        });
+      })
+    } else {
+      res.status(204).json();
+    }
+  }).catch(function(err) {
+    res.status(500).json({
+      message: messages.ise
+    });
+  })
+}
+
+router.get("/apps/tickets", authMiddleware.auth, function(req, res) {
+  let isAll = req.session.isAdmin && !req.query.self;
+  //FOR ADMIN
+  //Get owned apps
+  //For those apps go to jiraTickets collection and get all the tickets from that month
+  //Align in JSON and return
+  if (isAll)
+    getAppJiraTickets(req, res, isAll);
+  else {
+    //FOR ME
+    //Get assigned apps
+    req.app.db.collection("assignedUsers").find({ emailId: req.session.emailId }).toArray().then(function(ausrs) {
+      if (ausrs.length) {
+        let appIds = ausrs.map((v) => v.appId);
+        getAppJiraTickets(req, res, false, appIds);
+      } else {
+        res.status(204).json();
+      }
+    }).catch(function(err) {
+      res.status(500).json({
+        message: messages.ise
+      });
+    })
+  }
+})
+
+function getUserJiraEffort(req, res, isAll, appIds) {
+  let noOfMonths = req.query.noOfMonths || 1;
+  let currentMonth = new Date().getMonth() + 1;
+  let currentYear = new Date().getFullYear();
+  let months = [currentMonth];
+  let years = [currentYear];
+  if ((currentMonth - noOfMonths) < 0) {
+    years.push(currentYear - 1);
+  }
+
+  getAllMonths(months, currentMonth, noOfMonths);
+  let appQuery = {};
+  if (isAll) appQuery.ownerEmailId = req.session.emailId;
+  else appQuery._id = { $in: appIds };
+  req.app.db.collection("applications").find(appQuery).toArray().then(function(apps) {
+    if (apps.length) {
+      let _appIds = apps.map((v) => {
+        return v._id;
+      });
+
+      let effQuery = {
+        month: { $in: months },
+        year: { $in: years },
+        appId: { $in: _appIds }
+      };
+
+      if (!isAll) effQuery.emailId = req.session.emailId;
+      req.app.db.collection("jiraTickets").find(effQuery).toArray().then(function(tickets) {
+        if (tickets.length) {
+          let totalTickets = {};
+          let emailIds = [];
+          for (let i = 0; i < tickets.length; i++) {
+            emailIds.push(tickets[i].emailId);
+          }
+
+          req.app.db.collection("users").find({ emailId: { $in: emailIds } }).project({ emailId: 1, name: 1 }).toArray().then(function(usrs) {
+            let usrObj = {};
+            for (let i = 0; i < usrs.length; i++) {
+              usrObj[usrs[i].emailId] = usrs[i].name;
+            }
+
+            for (let i = 0; i < tickets.length; i++) {
+              if (!totalTickets[tickets[i].year]) totalTickets[tickets[i].year] = {};
+              if (!totalTickets[tickets[i].year][MONTHS[tickets[i].month]]) totalTickets[tickets[i].year][MONTHS[tickets[i].month]] = {};
+              if (!totalTickets[tickets[i].year][MONTHS[tickets[i].month]][usrObj[tickets[i].emailId]]) {
+                totalTickets[tickets[i].year][MONTHS[tickets[i].month]][usrObj[tickets[i].emailId]] = {
+                  totalTickets: 0,
+                  totalClosedTickets: 0
+                };
+              }
+
+              totalTickets[tickets[i].year][MONTHS[tickets[i].month]][usrObj[tickets[i].emailId]].totalTickets += tickets[i].totalJiraTickets;
+              totalTickets[tickets[i].year][MONTHS[tickets[i].month]][usrObj[tickets[i].emailId]].totalClosedTickets += tickets[i].closedJiraTickets;
+            }
+
+            res.status(200).json(totalTickets);
+          }).catch(function(err) {
+            res.status(500).json({
+              message: messages.ise
+            });
+          })
+        } else {
+          res.status(204).json();
+        }
+      }).catch(function(err) {
+        res.status(500).json({
+          message: messages.ise
+        });
+      })
+    } else {
+      res.status(204).json();
+    }
+  }).catch(function(err) {
+    res.status(500).json({
+      message: messages.ise
+    });
+  })
+}
+
+router.get("/users/tickets", authMiddleware.auth, function(req, res) {
+  let isAll = req.session.isAdmin && !req.query.self;
+  if (isAll) {
+    getUserJiraEffort(req, res, isAll);
+  } else {
+    req.app.db.collection("assignedUsers").find({ emailId: req.session.emailId }).toArray().then(function(ausrs) {
+      if (ausrs.length) {
+        let appIds = ausrs.map((v) => v.appId);
+        getUserJiraEffort(req, res, false, appIds);
+      } else {
+        res.status(204).json();
+      }
+    }).catch(function(err) {
+      res.status(500).json({
+        message: messages.ise
+      });
+    })
   }
 })
 

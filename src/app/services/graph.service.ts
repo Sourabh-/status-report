@@ -52,7 +52,7 @@ export class GraphUtilities {
 		return graph;
 	}
 
-	getAppVsHoursGraph(data, filter?) {
+	getAppOrAssoVsHoursGraph(data, filter?) {
 		let graph = {
 	      	"type": "serial",
 		    "theme": "light",

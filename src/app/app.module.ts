@@ -15,6 +15,7 @@ import { UsersComponent } from './pages/home/users/users.component';
 
 import { DateValidatorDirective } from './services/datevalidator.directive';
 import { Utilities } from './services/utility.service';
+import { GraphUtilities } from './services/graph.service';
 import { AuthGuard } from './services/authGuard.service';
 
 import { AmChartsModule } from "@amcharts/amcharts3-angular";
@@ -72,7 +73,7 @@ const appRoutes: Routes = [
     DataTableModule
   ],
   providers: [
-    Utilities, AuthGuard
+    Utilities, AuthGuard, GraphUtilities
   ],
   bootstrap: [AppComponent]
 })
