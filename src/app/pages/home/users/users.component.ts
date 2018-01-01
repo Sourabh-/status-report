@@ -50,6 +50,7 @@ export class UsersComponent implements OnInit {
 
 	constructor(dateConfig: NgbDatepickerConfig, private modalService: NgbModal, private ajaxService: AjaxService, private utilities: Utilities) {
 		let today = new Date();
+		dateConfig.minDate = {year: 1950, month: 1, day: 1};
 		dateConfig.maxDate = {year: today.getFullYear(), month: today.getMonth()+1, day: today.getDate()};
 	}
 

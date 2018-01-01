@@ -91,19 +91,23 @@ export class GraphUtilities {
 					let tmp = {
 						"week": ((fromDate.getDate() + "/" + monthToKeys[fromDate.getMonth()+1] + "/" + fromDate.getFullYear()) + " - " + (toDate.getDate() + "/" + monthToKeys[toDate.getMonth()+1] + "/" + toDate.getFullYear()))	
 					}
+
+
 					for(let key in data[i]) {
 						if(["fromDate", "toDate"].indexOf(key) == -1) {
-							tmp[key] = data[i].key;
-							graph.graphs.push({
-								"balloonText": key + ": [[value]]",
-								"fillAlphas": 0.8,
-								"lineAlpha": 0.2,
-								"title": key,
-								"type": "column",
-								"valueField": key
-							});
+							tmp[key] = data[i][key];
+							if(i == 0)
+								graph.graphs.push({
+									"balloonText": key + ": [[value]]",
+									"fillAlphas": 0.8,
+									"lineAlpha": 0.2,
+									"title": key,
+									"type": "column",
+									"valueField": key
+								});
 						}
 					}
+
 					graph.dataProvider.push(tmp);
 				}
 			}

@@ -24,36 +24,42 @@ const MONTHS = {
 
 function getAppEffort(req, res, isAll, appIds) {
   let noOfDays = req.query.noOfDays || 30;
-  let createdOn = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
+  let createdOnAfter = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
   let noOfApps = req.query.noOfApps || 99;
   let appQuery = {};
 
   if (isAll) appQuery.ownerEmailId = req.session.emailId;
   else appQuery._id = { $in: appIds };
-  req.app.db.collection("applications").find(appQuery).limit(noOfApps).toArray().then(function(apps) {
+  req.app.db.collection("applications").find(appQuery).limit(Number(noOfApps)).toArray().then(function(apps) {
     if (apps.length) {
       let appsObj = {};
       let _appIds = apps.map((v) => {
         appsObj[v._id] = v.applicationName;
         return v._id;
       });
-      let effQuery = { appId: { $in: _appIds }, createdOn: { $gt: createdOn } };
+      let effQuery = { appId: { $in: _appIds } };
       if (!isAll) effQuery.emailId = req.session.emailId;
-      req.app.db.collection("effort").find(effQuery).toArray().then(function(eff) {
-        if (eff.length) {
-          let totNoOfHrs = {};
-          let weekIds = [];
-          for (let i = 0; i < eff.length; i++) {
-            if (!totNoOfHrs[eff[i].weekId + ""]) {
-              totNoOfHrs[eff[i].weekId + ""] = {};
-            }
 
-            if (!totNoOfHrs[eff[i].weekId + ""][appsObj[eff[i].appId]]) totNoOfHrs[eff[i].weekId + ""][appsObj[eff[i].appId]] = 0;
-            totNoOfHrs[eff[i].weekId + ""][appsObj[eff[i].appId]] += eff[i].noOfHours;
-            weekIds.push(eff[i].weekId);
-            req.app.db.collection("weeks").find({
-              _id: { $in: weekIds }
-            }).toArray().then(function(weeks) {
+      req.app.db.collection("weeks").find({
+        fromDate: { $gt: createdOnAfter }
+      }).toArray().then(function(weeks) {
+        if (weeks.length) {
+          let weekIds = weeks.map((v) => v._id);
+          effQuery.weekId = { $in: weekIds };
+          req.app.db.collection("effort").find(effQuery).toArray().then(function(eff) {
+            if (eff.length) {
+              let totNoOfHrs = {};
+
+              for (let i = 0; i < eff.length; i++) {
+                if (!totNoOfHrs[eff[i].weekId + ""]) {
+                  totNoOfHrs[eff[i].weekId + ""] = {};
+                }
+
+                if (!totNoOfHrs[eff[i].weekId + ""][appsObj[eff[i].appId]]) totNoOfHrs[eff[i].weekId + ""][appsObj[eff[i].appId]] = 0;
+                totNoOfHrs[eff[i].weekId + ""][appsObj[eff[i].appId]] += eff[i].noOfHours;
+              }
+
+
               let result = [];
               for (let key in totNoOfHrs) {
                 for (let i = 0; i < weeks.length; i++) {
@@ -69,12 +75,15 @@ function getAppEffort(req, res, isAll, appIds) {
 
               res.status(200).json(result);
 
-            }).catch(function(err) {
-              res.status(500).json({
-                message: messages.ise
-              });
-            })
-          }
+
+            } else {
+              res.status(204).json();
+            }
+          }).catch(function(err) {
+            res.status(500).json({
+              message: messages.ise
+            });
+          })
         } else {
           res.status(204).json();
         }
@@ -125,70 +134,78 @@ router.get("/apps/hours", authMiddleware.auth, function(req, res) {
 
 function getUserEffort(req, res, isAll, appIds) {
   let noOfDays = req.query.noOfDays || 30;
-  let createdOn = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
+  let createdOnAfter = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
   let noOfApps = req.query.noOfApps || 99;
   let appQuery = {};
 
   if (isAll) appQuery.ownerEmailId = req.session.emailId;
   else appQuery._id = { $in: appIds };
-  req.app.db.collection("applications").find(appQuery).limit(noOfApps).toArray().then(function(apps) {
+  req.app.db.collection("applications").find(appQuery).limit(Number(noOfApps)).toArray().then(function(apps) {
     if (apps.length) {
       let _appIds = apps.map((v) => v._id);
       let effQuery = {
-        appId: { $in: _appIds },
-        createdOn: { $gt: createdOn }
+        appId: { $in: _appIds }
       };
 
-      if (!isAll) effQuery.emailId = req.session.emailId;
-      req.app.db.collection("effort").find(effQuery).toArray().then(function(eff) {
-        if (eff.length) {
-          let totNoOfHrs = {};
-          let weekIds = [];
-          let emailIds = [];
-          for (let i = 0; i < eff.length; i++) {
-            if (!totNoOfHrs[eff[i].weekId + ""]) {
-              totNoOfHrs[eff[i].weekId + ""] = {};
-            }
+      req.app.db.collection("weeks").find({
+        fromDate: { $gt: createdOnAfter }
+      }).toArray().then(function(weeks) {
+        if (weeks.length) {
+          let weekIds = weeks.map((v) => v._id);
+          if (!isAll) effQuery.emailId = req.session.emailId;
+          effQuery.weekId = { $in: weekIds };
+          req.app.db.collection("effort").find(effQuery).toArray().then(function(eff) {
+            if (eff.length) {
+              let totNoOfHrs = {};
+              let emailIds = [];
+              for (let i = 0; i < eff.length; i++) {
+                if (!totNoOfHrs[eff[i].weekId + ""]) {
+                  totNoOfHrs[eff[i].weekId + ""] = {};
+                }
 
-            if (!totNoOfHrs[eff[i].weekId + ""][eff[i].emailId]) totNoOfHrs[eff[i].weekId + ""][eff[i].emailId] = 0;
-            totNoOfHrs[eff[i].weekId + ""][eff[i].emailId] += eff[i].noOfHours;
-            weekIds.push(eff[i].weekId);
-            emailIds.push(eff[i].emailId);
-          }
+                if (!totNoOfHrs[eff[i].weekId + ""][eff[i].emailId]) totNoOfHrs[eff[i].weekId + ""][eff[i].emailId] = 0;
+                totNoOfHrs[eff[i].weekId + ""][eff[i].emailId] += eff[i].noOfHours;
+                emailIds.push(eff[i].emailId);
+              }
 
-          Q.all([
-            mongoWrapper.findAll(req.app.db, "weeks", { _id: { $in: weekIds } }),
-            mongoWrapper.findAll(req.app.db, "users", { _id: { $in: emailIds } })
-          ]).then(function(res) {
-            let result = [];
-            for (let key in totNoOfHrs) {
-              for (let i = 0; i < res[0].length; i++) {
-                let tmp = {};
-                tmp.fromDate = res[0][i].fromDate;
-                tmp.toDate = res[0][i].toDate;
-                let users = {};
-                for (let key2 in totNoOfHrs[key]) {
-                  for (let j = 0; j < res[1].length; j++) {
-                    if (key2 == res[1][j].emailId) {
-                      tmp[res[1][j].name] = totNoOfHrs[key][key2];
-                      break;
+              Q.all([
+                mongoWrapper.findAll(req.app.db, "users", { emailId: { $in: emailIds } })
+              ]).then(function(resl) {
+                let result = [];
+                for (let key in totNoOfHrs) {
+                  for (let i = 0; i < weeks.length; i++) {
+                    let tmp = {};
+                    tmp.fromDate = weeks[i].fromDate;
+                    tmp.toDate = weeks[i].toDate;
+                    let users = {};
+                    for (let key2 in totNoOfHrs[key]) {
+                      for (let j = 0; j < resl[0].length; j++) {
+                        if (key2 == resl[0][j].emailId) {
+                          tmp[resl[0][j].name] = totNoOfHrs[key][key2];
+                          break;
+                        }
+                      }
                     }
+                    result.push(tmp);
+                    break;
                   }
                 }
-                result.push(tmp);
-                break;
 
                 res.status(200).json(result);
-              }
-            }
 
+              }).catch(function(err) {
+                res.status(500).json({
+                  message: messages.ise
+                });
+              })
+            } else {
+              res.status(204).json();
+            }
           }).catch(function(err) {
             res.status(500).json({
               message: messages.ise
             });
           })
-        } else {
-          res.status(204).json();
         }
       }).catch(function(err) {
         res.status(500).json({

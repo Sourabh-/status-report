@@ -36,6 +36,7 @@ router.post("/create", authMiddleware.auth, function(req, res) {
     })
   } else {
     var pwd = randomstring.generate(7);
+    console.log(pwd);
     var salt = bcrypt.genSaltSync(saltRounds);
     var user = {
       "name": req.body.name,

@@ -34,7 +34,7 @@ router.post("/create", authMiddleware.auth, function(req, res) {
     let tDate = req.body.toDate;
     let today = new Date();
     let exactDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    if ((fDate > tDate) || (tDate - fDate > (7 * 24 * 60 * 60 * 1000)) || (fDate < exactDate) || (tDate < exactDate)) {
+    if ((fDate > tDate) || (tDate - fDate > (7 * 24 * 60 * 60 * 1000))) {// || (fDate < exactDate) || (tDate < exactDate)
       return res.status(400).json({
         message: messages.invalidWeek
       })
