@@ -1,38 +1,48 @@
 <div class="container-fluid">
-	<div class="row">
-		<div class="col-md-12 col-sm-12 col-xs-12">
-			<div class="graphic-card">
-				<div id="chartdiv" [style.width.%]="100" [style.height.px]="240"></div>	
-				<div class="text-center small-font-size text-muted">Figure 1: Numbers of hours spent in last 7 days</div>	
-			</div>	
-		</div>
-		<div class="col-md-12 col-sm-12 col-xs-12">
-			<div class="graphic-card">
-				<div id="chartdiv1" [style.width.%]="100" [style.height.px]="240"></div>
-				<div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>	
-			</div>	
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-md-6 col-sm-12 col-xs-12">
-			<div class="graphic-card">
-				<div id="chartdiv3" [style.width.%]="100" [style.height.px]="240"></div>
-				<div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>		
-			</div>	
-		</div>
-		<div class="col-md-6 col-sm-12 col-xs-12">
-			<div class="graphic-card">
-				<div id="chartdiv4" [style.width.%]="100" [style.height.px]="240"></div>	
-				<div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>	
-			</div>	
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-md-12 col-sm-12 col-xs-12">
-			<div class="graphic-card">
-				<div id="chartdiv5" [style.width.%]="100" [style.height.px]="240"></div>
-				<div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>		
-			</div>	
-		</div>
-	</div>
+  <div class="row marTop20" *ngIf="isAdmin">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="col-md-12 col-sm-12 col-xs-12 text-right">
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-sm btn-primary" [ngClass]="{'active': !showSelf}">All</button>
+          <button type="button" class="btn btn-sm btn-primary" [ngClass]="{'active': showSelf}">Self</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+        <div id="chartdiv" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 1: Numbers of hours spent in last 7 days</div>
+      </div>
+    </div>
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+        <div id="chartdiv1" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+        <div id="chartdiv2" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>
+      </div>
+    </div>
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+        <div id="chartdiv3" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+        <div id="chartdiv4" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>
+      </div>
+    </div>
+  </div>
 </div>

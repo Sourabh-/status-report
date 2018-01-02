@@ -90,10 +90,10 @@ router.post("/jira/count/create", authMiddleware.auth, function(req, res) {
           $set: {
             emailId: req.session.emailId,
             appId: ObjectID(req.body.appId),
-            month: req.body.month,
-            year: req.body.year,
+            month: Number(req.body.month),
+            year: Number(req.body.year),
             totalJiraTickets: req.body.totalJiraTickets,
-            closedJiraTickets: req.body.openJiraTickets
+            closedJiraTickets: req.body.closedJiraTickets
           }
         }, {
           upsert: true

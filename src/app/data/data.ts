@@ -51,3 +51,22 @@ export const monthToKeys = {
   "11": "Nov",
   "12": "Dec"
 };
+
+export const designations = [
+  "Software Engineer", 
+  "Senior Software Engineer", 
+  "Team Lead",
+  "Lead Consultant",
+  "Director",
+  "Chief Technical Officer",
+  "Architect",
+  "Associate Architect",
+  "Chief Architect",
+  "Chief Executive Officer",
+  "Manager",
+  "Technical Manager",
+  "Project Manager",
+  "Delivery Manager",
+  "Assistant Vice President",
+  "Vice President"
+];

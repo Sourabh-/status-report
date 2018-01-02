@@ -84,8 +84,10 @@ export class GraphUtilities {
 	    //Data {from, to, [appname]: totalHoursWorked}
 		if(!filter || filter == 1) {
 			graph.categoryField = "week";
+			let flag = 0;
+			let count = 0;
 			for(let i=0; i<data.length; i++) {
-				if(data[i].fromDate > (new Date().getTime() - (22 * 24 * 60 * 60 * 60 * 1000))) {
+				if(data[i].fromDate > (new Date().getTime() - (22 * 24 * 60 * 60 * 1000))) {
 					let fromDate = new Date(data[i].fromDate);
 					let toDate = new Date(data[i].toDate);
 					let tmp = {
@@ -96,7 +98,9 @@ export class GraphUtilities {
 					for(let key in data[i]) {
 						if(["fromDate", "toDate"].indexOf(key) == -1) {
 							tmp[key] = data[i][key];
-							if(i == 0)
+							if(flag == 0) {
+								count++;
+								if(count == (Object.keys(data[i]).length-2)) flag = 1;
 								graph.graphs.push({
 									"balloonText": key + ": [[value]]",
 									"fillAlphas": 0.8,
@@ -105,6 +109,7 @@ export class GraphUtilities {
 									"type": "column",
 									"valueField": key
 								});
+							}
 						}
 					}
 
@@ -152,5 +157,64 @@ export class GraphUtilities {
 		}
 
 		return graph;
+	}
+
+	getAppOrAssoVsJiraGraph(data, category) {
+		let graph = {
+	      	"type": "serial",
+		    "theme": "light",
+			"categoryField": category,
+			"depth3D": 20,
+			"angle": 30,
+			"startDuration": 1,
+			"categoryAxis": {
+				"gridPosition": "start",
+				"position": "left",
+				"axisAlpha": 0,
+				"gridAlpha": 0
+			},
+			"trendLines": [],
+			"graphs": [{
+				"balloonText": "Closed JIRA tickets: [[value]]",
+				"fillAlphas": 0.8,
+				"lineAlpha": 0.2,
+				"title": "Closed JIRA tickets",
+				"type": "column",
+				"valueField": "totalJiraTickets"
+			}, {
+				"balloonText": "Total JIRA tickets: [[value]]",
+				"fillAlphas": 0.8,
+				"lineAlpha": 0.2,
+				"title": "Total JIRA tickets",
+				"type": "column",
+				"valueField": "closedJiraTickets"
+			}],
+			"guides": [],
+			"valueAxes": [
+				{
+					"position": "top",
+					"axisAlpha": 0
+				}
+			],
+			"allLabels": [],
+			"balloon": {},
+			"titles": [],
+			"dataProvider": []
+	    };
+
+	    for(let yr in data) {
+	    	for(let mnth in data[yr]) {
+	    		for(let key in data[yr][mnth]) {
+	    			let tmp = {
+	    				[category]: key,
+	    				closedJiraTickets: data[yr][mnth][key].totalTickets,
+	    				totalJiraTickets: data[yr][mnth][key].totalClosedTickets
+	    			};
+	    			graph.dataProvider.push(tmp);
+	    		}
+	    	}
+	    }
+
+	    return graph;
 	}
 }

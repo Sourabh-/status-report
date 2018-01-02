@@ -12,7 +12,11 @@ import { GraphUtilities } from '../../../services/graph.service';
 export class DashboardComponent implements OnInit {
     private appVsEffChart: AmChart;
     private assoVsEffChart: AmChart;
+    private jiraVsAppChart: AmChart;
+    private jiraVsAssoChart: AmChart;
     private colors = ["#FF0F00", "#FF6600", "#FF9E01", "#FCD202", "#8A0CCF", "#CD0D74"];
+    public showSelf = false;
+    public isAdmin = JSON.parse(this.utilities.getCookie("profile")).isAdmin;
 	constructor(private AmCharts: AmChartsService, private ajaxService: AjaxService, public utilities: Utilities, public gUtilities: GraphUtilities) {
 		
 	}
@@ -52,7 +56,20 @@ export class DashboardComponent implements OnInit {
 	    })
 	    .subscribe(
 	    	data => {
-
+	    		//Example format: 
+	    		/*{
+					  2017: {
+					    JAN: {
+					       name: {
+					         totalTickets:
+					         totalClosedTickets: 
+					       }
+					    }
+					  }
+				  }*/
+				if(data && Object.keys(data).length) {
+		        	this.jiraVsAppChart = this.AmCharts.makeChart("chartdiv2", this.gUtilities.getAppOrAssoVsJiraGraph(data, "apps"));
+		        }
 	    	},
 	    	error => {}
 	    )
@@ -63,7 +80,9 @@ export class DashboardComponent implements OnInit {
 	    })
 	    .subscribe(
 	    	data => {
-
+	    		if(data && Object.keys(data).length) {
+		        	this.jiraVsAssoChart = this.AmCharts.makeChart("chartdiv3", this.gUtilities.getAppOrAssoVsJiraGraph(data, "associates"));
+		        }
 	    	},
 	    	error => {}
 	    )

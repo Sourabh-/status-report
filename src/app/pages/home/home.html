@@ -38,7 +38,7 @@
       </div>
       <hr class="hr-divider" />
     </li>
-    <li class="nav-item menu-item" placement="right" ngbTooltip="Master Data" [ngClass]="{'active-item': clicked == 'master'}" (click)="handleRoute('master')">
+    <li *ngIf="profile.isAdmin" class="nav-item menu-item" placement="right" ngbTooltip="Master Data" [ngClass]="{'active-item': clicked == 'master'}" (click)="handleRoute('master')">
       <div class="menu-item-div" [ngClass]="{'menu-item-div-small': !expanded}">
         <span class="oi oi-spreadsheet"></span>&nbsp;&nbsp;&nbsp;&nbsp;
         <span [ngClass]="{'hide': !expanded}">&nbsp;&nbsp;&nbsp;&nbsp;Master Data</span>

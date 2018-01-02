@@ -5,6 +5,7 @@ import { NgbDateLocalParserFormatter } from "../../../services/dateformat.servic
 import {NgbModal, ModalDismissReasons, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import { AjaxService } from '../../../services/ajax.service';
 import { Utilities } from '../../../services/utility.service';
+import { designations } from "../../../data/data";
 
 @Component({
   selector: 'page-users',
@@ -12,24 +13,8 @@ import { Utilities } from '../../../services/utility.service';
   providers: [{provide: NgbDateParserFormatter, useClass: NgbDateLocalParserFormatter}]
 })
 export class UsersComponent implements OnInit {
-	designations = [
-		"Software Engineer", 
-		"Senior Software Engineer", 
-		"Team Lead",
-		"Lead Consultant",
-		"Director",
-		"Chief Technical Officer",
-		"Architect",
-		"Associate Architect",
-		"Chief Architect",
-		"Chief Executive Officer",
-		"Manager",
-		"Technical Manager",
-		"Project Manager",
-		"Delivery Manager",
-		"Assistant Vice President",
-		"Vice President"
-		];
+	designations = designations;
+	isAdmin = JSON.parse(this.utilities.getCookie("profile")).isAdmin;
 	showEdit = false;
 	public isSearchResult: boolean = false;
 	public isUserError: boolean = false;

@@ -172,22 +172,25 @@ function getUserEffort(req, res, isAll, appIds) {
                 mongoWrapper.findAll(req.app.db, "users", { emailId: { $in: emailIds } })
               ]).then(function(resl) {
                 let result = [];
+                console.log(totNoOfHrs);
                 for (let key in totNoOfHrs) {
                   for (let i = 0; i < weeks.length; i++) {
-                    let tmp = {};
-                    tmp.fromDate = weeks[i].fromDate;
-                    tmp.toDate = weeks[i].toDate;
-                    let users = {};
-                    for (let key2 in totNoOfHrs[key]) {
-                      for (let j = 0; j < resl[0].length; j++) {
-                        if (key2 == resl[0][j].emailId) {
-                          tmp[resl[0][j].name] = totNoOfHrs[key][key2];
-                          break;
+                    if ((weeks[i]._id+'') == key) {
+                      let tmp = {};
+                      tmp.fromDate = weeks[i].fromDate;
+                      tmp.toDate = weeks[i].toDate;
+                      let users = {};
+                      for (let key2 in totNoOfHrs[key]) {
+                        for (let j = 0; j < resl[0].length; j++) {
+                          if (key2 == resl[0][j].emailId) {
+                            tmp[resl[0][j].name] = totNoOfHrs[key][key2];
+                            break;
+                          }
                         }
                       }
+                      result.push(tmp);
+                      break;
                     }
-                    result.push(tmp);
-                    break;
                   }
                 }
 
@@ -312,14 +315,14 @@ router.get("/apps/hours/:appName", authMiddleware.auth, function(req, res) {
   getEffortForApp(req, res);
 })
 
-function getAllMonths(months, currentMonth, noOfMonths) {
+function getAllMonths(query, currentMonth, currentYear, noOfMonths) {
   if (noOfMonths) {
     if ((currentMonth - noOfMonths) < 0) {
-      months.push(12 + (currentMonth - noOfMonths));
+      query.push({ $and: [{ month: (13 + (currentMonth - noOfMonths)) }, { year: (currentYear - 1) }] });
     } else
-      months.push(currentMonth - noOfMonths);
+      query.push({ $and: [{ month: (currentMonth - noOfMonths) + 1 }, { year: currentYear }] })
     noOfMonths--;
-    getAllMonths(months, currentMonth, noOfMonths);
+    getAllMonths(query, currentMonth, currentYear, noOfMonths);
   }
 }
 
@@ -327,13 +330,9 @@ function getAppJiraTickets(req, res, isAll, appIds) {
   let noOfMonths = req.query.noOfMonths || 1;
   let currentMonth = new Date().getMonth() + 1;
   let currentYear = new Date().getFullYear();
-  let months = [currentMonth];
-  let years = [currentYear];
-  if ((currentMonth - noOfMonths) < 0) {
-    years.push(currentYear - 1);
-  }
+  let query = [];
+  getAllMonths(query, currentMonth, currentYear, noOfMonths);
 
-  getAllMonths(months, currentMonth, noOfMonths);
   let appQuery = {};
   if (isAll) appQuery.ownerEmailId = req.session.emailId;
   else appQuery._id = { $in: appIds };
@@ -346,12 +345,12 @@ function getAppJiraTickets(req, res, isAll, appIds) {
       });
 
       let effQuery = {
-        month: { $in: months },
-        year: { $in: years },
+        $or: query,
         appId: { $in: _appIds }
       };
 
       if (!isAll) effQuery.emailId = req.session.emailId;
+
       req.app.db.collection("jiraTickets").find(effQuery).toArray().then(function(tickets) {
         if (tickets.length) {
           let totalTickets = {};
@@ -418,13 +417,9 @@ function getUserJiraEffort(req, res, isAll, appIds) {
   let noOfMonths = req.query.noOfMonths || 1;
   let currentMonth = new Date().getMonth() + 1;
   let currentYear = new Date().getFullYear();
-  let months = [currentMonth];
-  let years = [currentYear];
-  if ((currentMonth - noOfMonths) < 0) {
-    years.push(currentYear - 1);
-  }
+  let query = [];
 
-  getAllMonths(months, currentMonth, noOfMonths);
+  getAllMonths(query, currentMonth, currentYear, noOfMonths);
   let appQuery = {};
   if (isAll) appQuery.ownerEmailId = req.session.emailId;
   else appQuery._id = { $in: appIds };
@@ -435,8 +430,7 @@ function getUserJiraEffort(req, res, isAll, appIds) {
       });
 
       let effQuery = {
-        month: { $in: months },
-        year: { $in: years },
+        $or: query,
         appId: { $in: _appIds }
       };
 
