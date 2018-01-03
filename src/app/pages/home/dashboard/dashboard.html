@@ -3,8 +3,8 @@
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="col-md-12 col-sm-12 col-xs-12 text-right">
         <div class="btn-group" role="group">
-          <button type="button" class="btn btn-sm btn-primary" [ngClass]="{'active': !showSelf}">All</button>
-          <button type="button" class="btn btn-sm btn-primary" [ngClass]="{'active': showSelf}">Self</button>
+          <button type="button" class="btn btn-sm btn-primary" [ngClass]="{'active': !showSelf}" (click)="handleSwitchGraphs(false)">All</button>
+          <button type="button" class="btn btn-sm btn-primary" [ngClass]="{'active': showSelf}" (click)="handleSwitchGraphs(true)">Self</button>
         </div>
       </div>
     </div>
@@ -12,28 +12,76 @@
   <div class="row">
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="graphic-card">
+        <div class="row">
+          <div class="col-md-2 col-sm-4 col-xs-4 ml-auto">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.appVsEffort" (ngModelChange)="triggerFilter('appVsEffort', $event)">
+              <option value="1">2 Weeks</option>
+              <option value="2">2 Months</option>
+              <option value="3">3 Months</option>
+              <option value="6">6 Months</option>
+              <option value="12">1 Year</option>
+              <option value="60">5 Years</option>
+            </select>
+          </div>
+        </div>
         <div id="chartdiv" [style.width.%]="100" [style.height.px]="240"></div>
-        <div class="text-center small-font-size text-muted">Figure 1: Numbers of hours spent in last 7 days</div>
+        <div class="text-center small-font-size text-muted">Figure 1: Applications VS Effort</div>
       </div>
     </div>
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="graphic-card">
+      	<div class="row">
+          <div class="col-md-2 col-sm-4 col-xs-4 ml-auto">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.assoVsEffort" (ngModelChange)="triggerFilter('assoVsEffort', $event)">
+              <option value="1">2 Weeks</option>
+              <option value="2">2 Months</option>
+              <option value="3">3 Months</option>
+              <option value="6">6 Months</option>
+              <option value="12">1 Year</option>
+              <option value="60">5 Years</option>
+            </select>
+          </div>
+        </div>
         <div id="chartdiv1" [style.width.%]="100" [style.height.px]="240"></div>
-        <div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>
+        <div class="text-center small-font-size text-muted">Figure 2: Associates VS Effort</div>
       </div>
     </div>
   </div>
   <div class="row">
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="graphic-card">
+      	<div class="row">
+          <div class="col-md-2 col-sm-4 col-xs-4 ml-auto">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.appVsJira" (ngModelChange)="triggerFilter('appVsJira', $event)">
+              <option value="1">1 Month</option>
+              <option value="3">3 Months</option>
+              <option value="6">6 Months</option>
+              <option value="12">12 Months</option>
+              <option value="1">1 Year</option>
+              <option value="60">5 Years</option>
+            </select>
+          </div>
+        </div>
         <div id="chartdiv2" [style.width.%]="100" [style.height.px]="240"></div>
-        <div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>
+        <div class="text-center small-font-size text-muted">Figure 3: Applications VS JIRA Count</div>
       </div>
     </div>
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="graphic-card">
+      	<div class="row">
+          <div class="col-md-2 col-sm-4 col-xs-4 ml-auto">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.assoVsJira" (ngModelChange)="triggerFilter('assoVsJira', $event)">
+              <option value="1">1 Month</option>
+              <option value="3">3 Months</option>
+              <option value="6">6 Months</option>
+              <option value="12">12 Months</option>
+              <option value="1">1 Year</option>
+              <option value="60">5 Years</option>
+            </select>
+          </div>
+        </div>
         <div id="chartdiv3" [style.width.%]="100" [style.height.px]="240"></div>
-        <div class="text-center small-font-size text-muted">Figure 1: Chart 1 for reports</div>
+        <div class="text-center small-font-size text-muted">Figure 4: Associates VS JIRA Count</div>
       </div>
     </div>
   </div>

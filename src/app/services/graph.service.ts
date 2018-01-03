@@ -6,6 +6,7 @@ export class GraphUtilities {
 
 	calculateMonths(graph, data, length) {
 		graph.categoryField = "month";
+		let number;
 		let currentMonth = new Date().getMonth()+1;
 		let currentYear = new Date().getFullYear();
 		for(let i=0; i<length; i++) {
@@ -16,15 +17,17 @@ export class GraphUtilities {
 				});
 			} else {
 				graph.dataProvider.push({
-					"id": monthToKeys[(currentMonth-1) < 1 ? (12+currentMonth) : currentMonth],
-					"month": monthToKeys[(currentMonth-1) < 1 ? (12+currentMonth) : currentMonth] + "/" + ((currentMonth-1) < 1 ? currentYear-1 : currentYear)
+					"id": (currentMonth-i) <= 0 ? (12+(currentMonth-i)) : (currentMonth-i),
+					"month": monthToKeys[(currentMonth-i) <= 0 ? (12+(currentMonth-i)) : (currentMonth-i)] + "/" + (((currentMonth-i)) <= 0 ? (currentYear-1) : currentYear)
 				});
 			}
 		}
 
+		graph.dataProvider.reverse();
 		for(let i=0; i<data.length; i++) {
 			for(let j=0; j<graph.dataProvider.length; j++) {
 				if(graph.dataProvider[j].id == (new Date(data[i].fromDate).getMonth()+1)) {
+					number = j;
 					for(let key in data[i]) {
 						if(["fromDate", "toDate"].indexOf(key) == -1) {
 							if(!graph.dataProvider[j][key]) graph.dataProvider[j][key] = 0;
@@ -36,18 +39,19 @@ export class GraphUtilities {
 			}
 		}
 
-		for(let key in graph.dataProvider[0]) {
-			if(["month", "id"].indexOf(key) == -1) {
-				graph.graphs.push({
-					"balloonText": key + ": [[value]]",
-					"fillAlphas": 0.8,
-					"lineAlpha": 0.2,
-					"title": key,
-					"type": "column",
-					"valueField": key
-				});
+		if(typeof number != 'undefined')
+			for(let key in graph.dataProvider[number]) {
+				if(["month", "id"].indexOf(key) == -1) {
+					graph.graphs.push({
+						"balloonText": key + ": [[value]]",
+						"fillAlphas": 0.8,
+						"lineAlpha": 0.2,
+						"title": key,
+						"type": "column",
+						"valueField": key
+					});
+				}
 			}
-		}
 
 		return graph;
 	}
@@ -82,7 +86,7 @@ export class GraphUtilities {
 	    };
 
 	    //Data {from, to, [appname]: totalHoursWorked}
-		if(!filter || filter == 1) {
+		if(!filter || filter == 1) {//3Weeks
 			graph.categoryField = "week";
 			let flag = 0;
 			let count = 0;
@@ -116,7 +120,7 @@ export class GraphUtilities {
 					graph.dataProvider.push(tmp);
 				}
 			}
-		} else if(filter < 12) {
+		} else if(filter <= 12) {
 			graph = this.calculateMonths(graph, data, filter);
 		} else if(filter > 12) {
 			graph.categoryField = "year";
@@ -140,7 +144,6 @@ export class GraphUtilities {
 				for(let key2 in yearsData[key]) {
 					tmp[key2] = yearsData[key][key2];
 					if(flag == 0) {
-						flag = 1;
 						graph.graphs.push({
 							"balloonText": key2 + ": [[value]]",
 							"fillAlphas": 0.8,
@@ -151,7 +154,8 @@ export class GraphUtilities {
 						});
 					}
 				}
-
+				
+				flag = 1;
 				graph.dataProvider.push(tmp);
 			}
 		}

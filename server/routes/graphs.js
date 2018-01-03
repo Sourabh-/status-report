@@ -105,7 +105,7 @@ function getAppEffort(req, res, isAll, appIds) {
 //Fetch recent (given) apps and number of hours worked on them in last number of days (given)
 router.get("/apps/hours", authMiddleware.auth, function(req, res) {
   let isAdmin = req.session.isAdmin;
-  if (isAdmin && !req.query.self) {
+  if (isAdmin && (!req.query.self || req.query.self == 'false')) {
     //Fetch recent noOfDays applications limit to noOfApps where you are the owner
     //Fetch recent effort for the above apps
     //Fetch weeks for those week Ids
@@ -172,7 +172,6 @@ function getUserEffort(req, res, isAll, appIds) {
                 mongoWrapper.findAll(req.app.db, "users", { emailId: { $in: emailIds } })
               ]).then(function(resl) {
                 let result = [];
-                console.log(totNoOfHrs);
                 for (let key in totNoOfHrs) {
                   for (let i = 0; i < weeks.length; i++) {
                     if ((weeks[i]._id+'') == key) {
@@ -227,7 +226,7 @@ function getUserEffort(req, res, isAll, appIds) {
 
 router.get("/users/hours", authMiddleware.auth, function(req, res) {
   let isAdmin = req.session.isAdmin;
-  if (isAdmin && !req.query.self) {
+  if (isAdmin && (!req.query.self || req.query.self == 'false')) {
     //Fetch recent noOfDays applications limit to noOfApps where you are the owner
     //Fetch recent effort for the above apps/users
     //Fetch weeks for those week Ids
@@ -388,7 +387,7 @@ function getAppJiraTickets(req, res, isAll, appIds) {
 }
 
 router.get("/apps/tickets", authMiddleware.auth, function(req, res) {
-  let isAll = req.session.isAdmin && !req.query.self;
+  let isAll = req.session.isAdmin && (!req.query.self || req.query.self == 'false');
   //FOR ADMIN
   //Get owned apps
   //For those apps go to jiraTickets collection and get all the tickets from that month
@@ -488,7 +487,7 @@ function getUserJiraEffort(req, res, isAll, appIds) {
 }
 
 router.get("/users/tickets", authMiddleware.auth, function(req, res) {
-  let isAll = req.session.isAdmin && !req.query.self;
+  let isAll = req.session.isAdmin && (!req.query.self || req.query.self == 'false');
   if (isAll) {
     getUserJiraEffort(req, res, isAll);
   } else {
