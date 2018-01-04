@@ -27,8 +27,8 @@ export class DashboardComponent implements OnInit {
     public filterByDate = {
     	appVsEffort: 1,
     	assoVsEffort: 1,
-    	appVsJira: 1,
-    	assoVsJira: 1
+    	appVsJira: 2,
+    	assoVsJira: 2
     };
 
 	constructor(private AmCharts: AmChartsService, private ajaxService: AjaxService, public utilities: Utilities, public gUtilities: GraphUtilities) {
@@ -75,7 +75,7 @@ export class DashboardComponent implements OnInit {
 
 	    //Fetch JIRA-app graph
 	    this.ajaxService.fetchGraph("/graphs/apps/tickets", {
-	    	noOfMonths: 2,
+	    	noOfMonths: this.filterByDate.appVsJira,
 			self: this.showSelf
 	    })
 	    .subscribe(
@@ -100,7 +100,7 @@ export class DashboardComponent implements OnInit {
 
 	    //Fetch JIRA-associate graph
 	    this.ajaxService.fetchGraph("/graphs/users/tickets", {
-	    	noOfMonths: 2,
+	    	noOfMonths: this.filterByDate.assoVsJira,
 			self: this.showSelf
 	    })
 	    .subscribe(
@@ -124,8 +124,32 @@ export class DashboardComponent implements OnInit {
 				this.assoVsEffChart = this.AmCharts.makeChart("chartdiv1", this.gUtilities.getAppOrAssoVsHoursGraph(this.graphData.assoVsEffort, value));
 				break;
 			case "appVsJira":
+				this.ajaxService.fetchGraph("/graphs/apps/tickets", {
+			    	noOfMonths: value,
+					self: this.showSelf
+			    })
+			    .subscribe(
+			    	data => {
+						if(data && Object.keys(data).length) {
+				        	this.jiraVsAppChart = this.AmCharts.makeChart("chartdiv2", this.gUtilities.getAppOrAssoVsJiraGraph(data, "apps"));
+				        }
+			    	},
+			    	error => {}
+			    )
 				break;
 			case "assoVsJira":
+				this.ajaxService.fetchGraph("/graphs/users/tickets", {
+			    	noOfMonths: value,
+					self: this.showSelf
+			    })
+			    .subscribe(
+			    	data => {
+			    		if(data && Object.keys(data).length) {
+				        	this.jiraVsAssoChart = this.AmCharts.makeChart("chartdiv3", this.gUtilities.getAppOrAssoVsJiraGraph(data, "associates"));
+				        }
+			    	},
+			    	error => {}
+	    		)
 				break;
 		}
 	}

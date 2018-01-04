@@ -28,6 +28,7 @@ router.post("/session/create", function(req, res) {
             req.session.sessionId = uuid();
             req.session.emailId = docs[0].emailId;
             req.session.isAdmin = docs[0].isAdmin;
+            req.session.name = docs[0].name;
             res.cookie('sessionId', req.session.sessionId, { maxAge: (5 * 24 * 60 * 60 * 1000), httpOnly: false });
             res.status(201).json(docs[0]);
 

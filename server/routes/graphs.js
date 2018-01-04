@@ -174,7 +174,7 @@ function getUserEffort(req, res, isAll, appIds) {
                 let result = [];
                 for (let key in totNoOfHrs) {
                   for (let i = 0; i < weeks.length; i++) {
-                    if ((weeks[i]._id+'') == key) {
+                    if ((weeks[i]._id + '') == key) {
                       let tmp = {};
                       tmp.fromDate = weeks[i].fromDate;
                       tmp.toDate = weeks[i].toDate;
@@ -255,36 +255,56 @@ router.get("/users/hours", authMiddleware.auth, function(req, res) {
   }
 })
 
-function getAppNEffort(req, res, cb) {
+router.get("/apps/hours/:appName", authMiddleware.auth, function(req, res) {
   let isAll = req.session.isAdmin && !req.query.self;
-  req.app.db.collection("applications").findOne({ applicationName: req.params.appName }).then(function(apps) {
+  let noOfDays = req.query.noOfDays || 30;
+  let createdOnAfter = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
+  //For the given application and time period, find how much hours was spend by per user
+  //Get the application
+  //Get the weeks where from date is greater than time period
+  //For each of the user, find the total effort(weekIds/appId/emailId) and return
+
+  //For self, get the application
+  //Get the weeks where from date is greater than time period
+  //For my emailId, given weekIds and appId, get the total no of hours worked
+  req.app.db.collection("applications").findOne({ applicationName: req.params.appName }, { fields: { applicationName: 1, _id: 1 } }).then(function(apps) {
     if (apps.length) {
-      let noOfDays = req.query.noOfDays || 30;
-      let createdOn = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
-      let effQuery = { appId: apps[0]._id, createdOn };
-      if (!isAll) effQuery.emailId = req.session.emailId;
-      req.app.db.collection("effort").find(effQuery).toArray().then(function(effs) {
-        if (effs.length) {
-          let totNoOfHrs = {};
-          let emailIds = [];
-          for (let i = 0; i < effs.length; i++) {
-            if (!totNoOfHrs[effs[i].emailId]) totNoOfHrs[effs[i].emailId] = 0;
-            emailIds.push(effs[i].emailId);
-            totNoOfHrs[effs[i].emailId] += effs[i].noOfHours;
-          }
+      req.app.db.collection("weeks").find({ fromDate: { $gt: createdOnAfter } }).toArray().then(function(weeks) {
+        if (weeks.length) {
+          let weekIds = weeks.map((v) => v._id);
+          let effQuery = {
+            weekId: { $in: weekIds },
+            appId: apps[0]._id
+          };
 
-          req.app.db.collection("users").find({ emailId: { $in: emailIds } }).project({ name: 1, emailId: 1 }).toArray().then(function(usrs) {
-            let result = {
-              appName: req.params.appName,
-              noOfDays,
-              effort: {}
-            };
+          if (!isAll) effQuery.emailId = req.session.emailId;
+          req.app.db.collection("effort").find(effQuery).toArray().then(function(effs) {
+            if (effs.length) {
+              let result = {
+                applicationName: req.params.appName,
+                effort: {}
+              };
+              let emailIds = effs.map((v) => v.emailId);
+              req.app.db.collection("users").find({ emailId: { $in: emailIds } }).toArray(function(usrs) {
+                let userObj = {};
+                usrs.map((v) => {
+                  userObj[v.emailId] = v.name;
+                });
 
-            for (let i = 0; i < usrs.length; i++) {
-              result.effort[usrs[i].name] = totNoOfHrs[usrs[i].emailId];
+                for (let i = 0; i < effs.length; i++) {
+                  if (!result.effort[userObj[effs[i].emailId]]) result.effort[userObj[effs[i].emailId]] = 0;
+                  result.effort[userObj[effs[i].emailId]] += effs[i].noOfHours;
+                }
+
+                res.status(200).json(result);
+              }).catch(function(err) {
+                res.status(500).json({
+                  message: messages.ise
+                });
+              })
+            } else {
+              res.status(204).json();
             }
-
-            res.status(200).json(result);
           }).catch(function(err) {
             res.status(500).json({
               message: messages.ise
@@ -308,10 +328,97 @@ function getAppNEffort(req, res, cb) {
       message: messages.ise
     });
   })
+})
+
+function checkIfUserExists(req, res, isAll, cb) {
+  if(!isAll) {
+    cb(true, req.session.name);
+  } else {
+    req.app.db.collection("users").findOne({ emailId: req.params.emailId }, { fields: { name: 1 } }).then(function(usrs) {
+      if(usrs.length) {
+        cb(true, usrs[0].name);
+      } else {
+        cb(false);
+      }
+    }).catch(function(err) {
+      res.status(500).json({
+        message: messages.ise
+      })
+    })
+  }
 }
 
-router.get("/apps/hours/:appName", authMiddleware.auth, function(req, res) {
-  getEffortForApp(req, res);
+router.get("/users/hours/:emailId", authMiddleware.auth, function(req, res) {
+  let isAll = req.session.isAdmin && !req.query.self;
+  let noOfDays = req.query.noOfDays || 30;
+  let createdOnAfter = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
+
+  //For this user, in the given time period, get the effort/hours he/she spent in the assigned applications
+  //Check if user exists
+  //Get weeks where from date is greater than given time period
+  //For those weeks and emailId, get total hours spent in the applications
+
+  //For self user, 
+  //Get weeks where from date is greater than given time period
+  //For those weeks and self emailId, get total hours spent in the applications
+
+  checkIfUserExists(req, res, isAll, function(bool, name) {
+    if (!bool) {
+      res.status(404).json({
+        message: messages.noEmailMatch
+      })
+    } else {
+      req.app.db.collection("weeks").find({ fromDate: { $gt: createdOnAfter } }).toArray().then(function(weeks) {
+        if (weeks.length) {
+          let weekIds = weeks.map((v) => v._id);
+          let effQuery = {
+            weekId: { $in: weekIds },
+            emailId: isAll ? req.params.emailId : req.session.emailId
+          };
+
+          req.app.db.collection('effort').find(effQuery).then(function(effs) {
+            if (effs.length) {
+              let result = {
+                name,
+                emailId: effQuery.emailId,
+                effort: {}
+              };
+              let appIds = effs.map((v) => v.appId);
+
+              req.app.db.collection("applications").find({ _id: { $in: appIds } }).toArray().then(function(apps) {
+                let appObj = {};
+                apps.map((v) => {
+                  appsObj[v._id + ""] = v.applicationName;
+                });
+
+                for(let i=0; i<effs.length; i++) {
+                  if(!result.effort[appsObj[effs[i].appId + ""]]) result.effort[appsObj[effs[i].appId + ""]] = 0;
+                  result.effort[appsObj[effs[i].appId + ""]] += effs[i].noOfHours;
+                }
+
+                res.status(200).json(result);
+              }).catch(function(err) {
+                res.status(500).json({
+                  message: messages.ise
+                })
+              })
+            } else
+              res.status(204).json();
+          }).catch(function(err) {
+            res.status(500).json({
+              message: messages.ise
+            })
+          })
+        } else {
+          res.status(204).json();
+        }
+      }).catch(function(err) {
+        res.status(500).json({
+          message: messages.ise
+        });
+      })
+    }
+  })
 })
 
 function getAllMonths(query, currentMonth, currentYear, noOfMonths) {
