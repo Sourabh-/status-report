@@ -27,7 +27,8 @@
       ],
       "scripts": [
         "assets/scripts/amcharts.js",
-        "assets/scripts/serial.js"
+        "assets/scripts/serial.js",
+        "assets/scripts/pie.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {

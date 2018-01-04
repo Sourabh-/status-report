@@ -1,5 +1,8 @@
 import { Injectable } from "@angular/core";
-import {monthToKeys} from "../data/data";
+import { monthToKeys, colors } from "../data/data";
+
+//TO DO
+//1. Change graph fill colors
 @Injectable()
 export class GraphUtilities {
 	monthToKeys = monthToKeys;
@@ -107,6 +110,7 @@ export class GraphUtilities {
 								if(count == (Object.keys(data[i]).length-2)) flag = 1;
 								graph.graphs.push({
 									"balloonText": key + ": [[value]]",
+									"fillColors": colors[count],
 									"fillAlphas": 0.8,
 									"lineAlpha": 0.2,
 									"title": key,
@@ -154,7 +158,7 @@ export class GraphUtilities {
 						});
 					}
 				}
-				
+
 				flag = 1;
 				graph.dataProvider.push(tmp);
 			}
@@ -220,5 +224,36 @@ export class GraphUtilities {
 	    }
 
 	    return graph;
+	}
+
+	getAppNAssoPieChart(data, valueLabel, titleLabel) {
+		let graph = {
+		  "type": "pie",
+		  "theme": "light",
+		  "dataProvider": [],
+		  "outlineAlpha": 0.4,
+		  "depth3D": 15,
+		  "angle": 30,
+		  "valueField": valueLabel,
+		  "titleField": titleLabel,
+		   "balloon":{
+		   "fixedPosition": true
+		  },
+		  "autoMargins": false,
+		  "marginTop": 15,
+		  "marginBottom": 15,
+		  "marginLeft": 0,
+		  "marginRight": 0,
+		  "pullOutRadius": 0
+		};
+
+		for(let key in data.effort) {
+			graph.dataProvider.push({
+				[titleLabel]: key,
+				[valueLabel]: data.effort[key]
+			});
+		}
+
+		return graph;
 	}
 }

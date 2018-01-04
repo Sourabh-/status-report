@@ -70,3 +70,12 @@ export const designations = [
   "Assistant Vice President",
   "Vice President"
 ];
+
+export const colors = [
+  "#FF0F00", 
+  "#FF6600", 
+  "#FF9E01", 
+  "#FCD202", 
+  "#8A0CCF", 
+  "#CD0D74"
+];

@@ -256,7 +256,7 @@ router.get("/users/hours", authMiddleware.auth, function(req, res) {
 })
 
 router.get("/apps/hours/:appName", authMiddleware.auth, function(req, res) {
-  let isAll = req.session.isAdmin && !req.query.self;
+  let isAll = req.session.isAdmin && (!req.query.self || req.query.self == 'false');
   let noOfDays = req.query.noOfDays || 30;
   let createdOnAfter = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
   //For the given application and time period, find how much hours was spend by per user
@@ -267,14 +267,14 @@ router.get("/apps/hours/:appName", authMiddleware.auth, function(req, res) {
   //For self, get the application
   //Get the weeks where from date is greater than time period
   //For my emailId, given weekIds and appId, get the total no of hours worked
-  req.app.db.collection("applications").findOne({ applicationName: req.params.appName }, { fields: { applicationName: 1, _id: 1 } }).then(function(apps) {
-    if (apps.length) {
+  req.app.db.collection("applications").findOne({ applicationName: req.params.appName }, { fields: { applicationName: 1, _id: 1 } }).then(function(app) {
+    if (app) {
       req.app.db.collection("weeks").find({ fromDate: { $gt: createdOnAfter } }).toArray().then(function(weeks) {
         if (weeks.length) {
           let weekIds = weeks.map((v) => v._id);
           let effQuery = {
             weekId: { $in: weekIds },
-            appId: apps[0]._id
+            appId: app._id
           };
 
           if (!isAll) effQuery.emailId = req.session.emailId;
@@ -285,7 +285,7 @@ router.get("/apps/hours/:appName", authMiddleware.auth, function(req, res) {
                 effort: {}
               };
               let emailIds = effs.map((v) => v.emailId);
-              req.app.db.collection("users").find({ emailId: { $in: emailIds } }).toArray(function(usrs) {
+              req.app.db.collection("users").find({ emailId: { $in: emailIds } }).toArray().then(function(usrs) {
                 let userObj = {};
                 usrs.map((v) => {
                   userObj[v.emailId] = v.name;
@@ -334,9 +334,9 @@ function checkIfUserExists(req, res, isAll, cb) {
   if(!isAll) {
     cb(true, req.session.name);
   } else {
-    req.app.db.collection("users").findOne({ emailId: req.params.emailId }, { fields: { name: 1 } }).then(function(usrs) {
-      if(usrs.length) {
-        cb(true, usrs[0].name);
+    req.app.db.collection("users").findOne({ emailId: req.params.emailId }, { fields: { name: 1 } }).then(function(usr) {
+      if(usr) {
+        cb(true, usr.name);
       } else {
         cb(false);
       }
@@ -349,7 +349,7 @@ function checkIfUserExists(req, res, isAll, cb) {
 }
 
 router.get("/users/hours/:emailId", authMiddleware.auth, function(req, res) {
-  let isAll = req.session.isAdmin && !req.query.self;
+  let isAll = req.session.isAdmin && (!req.query.self || req.query.self == 'false');
   let noOfDays = req.query.noOfDays || 30;
   let createdOnAfter = new Date().getTime() - (noOfDays * 24 * 60 * 60 * 1000);
 
@@ -376,7 +376,7 @@ router.get("/users/hours/:emailId", authMiddleware.auth, function(req, res) {
             emailId: isAll ? req.params.emailId : req.session.emailId
           };
 
-          req.app.db.collection('effort').find(effQuery).then(function(effs) {
+          req.app.db.collection('effort').find(effQuery).toArray().then(function(effs) {
             if (effs.length) {
               let result = {
                 name,
@@ -386,7 +386,7 @@ router.get("/users/hours/:emailId", authMiddleware.auth, function(req, res) {
               let appIds = effs.map((v) => v.appId);
 
               req.app.db.collection("applications").find({ _id: { $in: appIds } }).toArray().then(function(apps) {
-                let appObj = {};
+                let appsObj = {};
                 apps.map((v) => {
                   appsObj[v._id + ""] = v.applicationName;
                 });

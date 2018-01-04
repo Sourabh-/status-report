@@ -9,26 +9,38 @@ import { GraphUtilities } from '../../../services/graph.service';
   templateUrl: './dashboard.html',
   providers: []
 })
+
+//TO DO
+//Too many fetchGraph calls, clean it up and move to a single function
+
 export class DashboardComponent implements OnInit {
     private appVsEffChart: AmChart;
     private assoVsEffChart: AmChart;
     private jiraVsAppChart: AmChart;
     private jiraVsAssoChart: AmChart;
-    private colors = ["#FF0F00", "#FF6600", "#FF9E01", "#FCD202", "#8A0CCF", "#CD0D74"];
+    private appPieChart: AmChart;
+    private assoPieChart: AmChart;
     public showSelf = false;
-    public isAdmin = JSON.parse(this.utilities.getCookie("profile")).isAdmin;
+    public profile = JSON.parse(this.utilities.getCookie("profile"));
+    public isAdmin = this.profile.isAdmin;
+    public ownedApplications = [];
+    public myApplications = [];
+    public shownApplications = [];
+    public users = [];
     public graphData = {
     	appVsEffort: [],
-    	assoVsEffort: [],
-    	appVsJira: {},
-    	assoVsJira: {}
+    	assoVsEffort: []
     };
 
     public filterByDate = {
     	appVsEffort: 1,
     	assoVsEffort: 1,
     	appVsJira: 2,
-    	assoVsJira: 2
+    	assoVsJira: 2,
+    	appPieChart: 20,
+    	assoPieChart: 20,
+    	appByNamePieChart: '',
+    	assoByNamePieChart: ''
     };
 
 	constructor(private AmCharts: AmChartsService, private ajaxService: AjaxService, public utilities: Utilities, public gUtilities: GraphUtilities) {
@@ -113,6 +125,117 @@ export class DashboardComponent implements OnInit {
 	    )
 
 	    //Fetch all applications and use as filter, get pie chart for selected application
+	    if(this.isAdmin) {
+			//Get all owned applications
+			this.ajaxService.getApp({
+				ownerEmailId: JSON.parse(this.utilities.getCookie("profile")).emailId
+			})
+		    .subscribe(
+		      data => {
+		      	if(data && data.length) {
+		      		this.ownedApplications = data;
+		        	this.shownApplications = data;
+		        	this.filterByDate.appByNamePieChart = data[0].applicationName;
+		        	//Get pie chart data
+		        	this.ajaxService.fetchGraph("/graphs/apps/hours/" + this.filterByDate.appByNamePieChart, {
+		        		noOfDays: this.filterByDate.appPieChart,
+		        		self: this.showSelf
+		        	})
+		        	.subscribe(
+		        		data => {
+		        			if(data) {
+		        				this.appPieChart = this.AmCharts.makeChart("chartdiv4", this.gUtilities.getAppNAssoPieChart(data, "noOfHours", "name"));
+		        			}
+		        		},
+		        		error => {
+
+		        		}
+		        	)
+		      	}
+		      },
+		      error => {
+
+		      }
+		    )
+
+		    //Get all users
+		    this.ajaxService.searchUser({})
+		    .subscribe(
+		    	data => {
+		    		if(data && data.length) {
+		    			this.users = data;
+		    			this.filterByDate.assoByNamePieChart = this.showSelf ? JSON.parse(this.utilities.getCookie("profile")).emailId : data[0].emailId;
+		    			//Get user's pie chart data
+		    			this.ajaxService.fetchGraph("/graphs/users/hours/" + this.filterByDate.assoByNamePieChart, {
+			        		noOfDays: this.filterByDate.assoPieChart,
+			        		self: this.showSelf
+			        	})
+			        	.subscribe(
+			        		data => {
+			        			if(data) {
+			        				this.assoPieChart = this.AmCharts.makeChart("chartdiv5", this.gUtilities.getAppNAssoPieChart(data, "noOfHours", "name"));
+			        			}
+			        		},
+			        		error => {
+
+			        		}
+			        	)
+		    		}
+		    	},
+		    	error => {
+
+		    	}
+		    )
+		} else {
+			this.filterByDate.assoByNamePieChart = JSON.parse(this.utilities.getCookie("profile")).emailId;
+			//Get user's pie chart data
+			this.ajaxService.fetchGraph("/graphs/users/hours/" + this.filterByDate.assoByNamePieChart, {
+        		noOfDays: this.filterByDate.assoPieChart,
+        		self: this.showSelf
+        	})
+        	.subscribe(
+        		data => {
+        			if(data) {
+        				this.assoPieChart = this.AmCharts.makeChart("chartdiv5", this.gUtilities.getAppNAssoPieChart(data, "noOfHours", "name"));
+        			}
+        		},
+        		error => {
+
+        		}
+        	)
+		}
+
+		//Get all assigned applications
+		this.ajaxService.getApp({
+			assigneeEmailId: JSON.parse(this.utilities.getCookie("profile")).emailId
+		})
+	    .subscribe(
+	      data => {
+	        this.myApplications = data ? data : [];
+	        if(!this.isAdmin && data && data.length) {
+	        	this.shownApplications = data;
+	        	this.filterByDate.appByNamePieChart = data[0].applicationName;
+	        	//Get pie chart data
+	        	this.ajaxService.fetchGraph("/graphs/apps/hours/" + this.filterByDate.appByNamePieChart, {
+	        		noOfDays: this.filterByDate.appPieChart,
+	        		self: this.showSelf
+	        	})
+	        	.subscribe(
+	        		data => {
+	        			if(data) {
+	        				this.appPieChart = this.AmCharts.makeChart("chartdiv4", this.gUtilities.getAppNAssoPieChart(data, "noOfHours", "name"));
+	        			}
+	        		},
+	        		error => {
+
+	        		}
+	        	)
+	        }
+	      },
+	      error => {
+
+	      }
+	    )
 	}
 
 	triggerFilter(type, value) {
@@ -150,6 +273,71 @@ export class DashboardComponent implements OnInit {
 			    	},
 			    	error => {}
 	    		)
+				break;
+			case 'appPieChart':
+		        //Get pie chart data
+	        	this.ajaxService.fetchGraph("/graphs/apps/hours/" + this.filterByDate.appByNamePieChart, {
+	        		noOfDays: value,
+	        		self: this.showSelf
+	        	})
+	        	.subscribe(
+	        		data => {
+	        			if(data) {
+	        				this.appPieChart = this.AmCharts.makeChart("chartdiv4", this.gUtilities.getAppNAssoPieChart(data, "noOfHours", "name"));
+	        			}
+	        		},
+	        		error => {
+
+	        		}
+	        	)
+				break;
+			case 'assoPieChart':
+				this.ajaxService.fetchGraph("/graphs/users/hours/" + this.filterByDate.assoByNamePieChart, {
+	        		noOfDays: value,
+	        		self: this.showSelf
+	        	})
+	        	.subscribe(
+	        		data => {
+	        			if(data) {
+	        				this.assoPieChart = this.AmCharts.makeChart("chartdiv5", this.gUtilities.getAppNAssoPieChart(data, "noOfHours", "name"));
+	        			}
+	        		},
+	        		error => {
+
+	        		}
+	        	)
+				break;
+			case 'appByNamePieChart':
+				this.ajaxService.fetchGraph("/graphs/apps/hours/" + value, {
+	        		noOfDays: this.filterByDate.appPieChart,
+	        		self: this.showSelf
+	        	})
+	        	.subscribe(
+	        		data => {
+	        			if(data) {
+	        				this.appPieChart = this.AmCharts.makeChart("chartdiv4", this.gUtilities.getAppNAssoPieChart(data, "noOfHours", "name"));
+	        			}
+	        		},
+	        		error => {
+
+	        		}
+	        	)
+				break;
+			case 'assoByNamePieChart':
+				this.ajaxService.fetchGraph("/graphs/users/hours/" + value, {
+	        		noOfDays: this.filterByDate.assoPieChart,
+	        		self: this.showSelf
+	        	})
+	        	.subscribe(
+	        		data => {
+	        			if(data) {
+	        				this.assoPieChart = this.AmCharts.makeChart("chartdiv5", this.gUtilities.getAppNAssoPieChart(data, "noOfHours", "name"));
+	        			}
+	        		},
+	        		error => {
+
+	        		}
+	        	)
 				break;
 		}
 	}
