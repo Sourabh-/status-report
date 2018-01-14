@@ -83,7 +83,7 @@ app.mailer = smtpTransport;
 /**
  * Get port from environment and store in Express.
  */
-const port = config.server.port || '4000';
+const port = process.env.PORT || config.server.port || '4000';
 app.set('port', port);
 
 /**
