@@ -1,6 +1,6 @@
 {
 	"mongo": {
-		"url": "mongodb://root:root@ds251747.mlab.com:51747/atom-reporte"
+		"url": "mongodb://root:root@ds251747.mlab.com:51747/atom-report"
 	},
 	"smtpEmail": {
 		"email": "utilizationapp@gmail.com",
