@@ -36,6 +36,7 @@ rl.question('Enter Mongo Host: ', (host) => {
                     console.log("Creating users index...");
                     db.collection("users").createIndex({ emailId: 1 }, { unique: true }, function(err, indexName) {
                       if (err) {
+                        console.log(err)
                         console.log("ERROR OCCURRED WHILE ADDING CONSTRAINT IN USERS! ABORTING!!!!!");
                         process.exit();
                       }
@@ -109,6 +110,8 @@ rl.question('Enter Mongo Host: ', (host) => {
                     })
                   } else {
                     console.log("ERROR OCCURRED! ABORTING!!!!!");
+                    rl.close();
+                    process.exit();
                   }
                 })
               } else {
