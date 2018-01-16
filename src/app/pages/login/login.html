@@ -1,5 +1,8 @@
 <div class="container-fluid">
-  <h2 class="login-header"> <span style="font-weight: bolder;">Welcome!</span> This is a report application to fill in your day-to-day project details.</h2>
+  <div class="login-header">
+    <img class="login-logo" src="../../../assets/images/atom.png"/>
+    <span class="login-logo-text">ATOM</span>
+  </div>
   <div class="login-form">
     <form [formGroup]="loginForm" (ngSubmit)="handleSignIn($event)" novalidate>
       <div class="form-group row">
@@ -46,6 +49,9 @@
         </div>
       </div>
     </form>
+  </div>
+  <div class="footer-logo">
+    <span style="color: #ffffff"><b>POWERED BY </b></span> <img class="genpact-logo" src="../../../assets/images/genpactLarge.png"/> 
   </div>
 </div>
 <div [ngClass]="{'hide': !utilities.showAlertMsg, 'alert': true}">

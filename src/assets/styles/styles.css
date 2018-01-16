@@ -20,6 +20,38 @@ body {
   margin-top: 10%;
 }
 
+.login-logo-text {
+  font-family: "Palatino Linotype","Book Antiqua",Palatino,serif;
+  font-weight: 600;
+  letter-spacing: 14px;
+  font-size: 48px;
+  margin-left: 14px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.login-logo {
+  display: inline-block;
+  width: 80px;
+  height: 60px;
+  margin-left: 20px;
+}
+
+.footer-logo {
+  min-width: 350px;
+  font-family: "Palatino Linotype","Book Antiqua",Palatino,serif;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.genpact-logo {
+  width: 200px;
+  height: 70px;
+  margin-left: 14px;
+}
+
 .login-form {
   margin: 0 auto;
   margin-top: 50px;
@@ -176,6 +208,8 @@ body {
   border-radius: 50%;
   margin-top: -3px;
 }
+
+
 
 
 

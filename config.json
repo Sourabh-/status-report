@@ -1,6 +1,7 @@
 {
 	"mongo": {
-		"url": "mongodb://root:root@ds251747.mlab.com:51747/atom-report"
+		"_comment": "mongodb://root:root@ds251747.mlab.com:51747/atom-report",
+		"url": "mongodb://127.0.0.1:27017/Database"
 	},
 	"smtpEmail": {
 		"email": "utilizationapp@gmail.com",
