@@ -210,17 +210,26 @@ export class GraphUtilities {
 			"dataProvider": []
 	    };
 
+	    let dProvider = {};
 	    for(let yr in data) {
 	    	for(let mnth in data[yr]) {
 	    		for(let key in data[yr][mnth]) {
-	    			let tmp = {
-	    				[category]: key,
-	    				closedJiraTickets: data[yr][mnth][key].totalTickets,
-	    				totalJiraTickets: data[yr][mnth][key].totalClosedTickets
-	    			};
-	    			graph.dataProvider.push(tmp);
+	    			if(!dProvider[key]) {
+	    				dProvider[key] = {
+	    					[category]: key,
+	    					closedJiraTickets: 0,
+	    					totalJiraTickets: 0
+	    				}
+	    			}
+
+	    			dProvider[key].closedJiraTickets += data[yr][mnth][key].totalTickets;
+	    			dProvider[key].totalJiraTickets += data[yr][mnth][key].totalClosedTickets;
 	    		}
 	    	}
+	    }
+
+	    for(let key in dProvider) {
+	    	graph.dataProvider.push(dProvider[key]);
 	    }
 
 	    return graph;

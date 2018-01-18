@@ -104,7 +104,7 @@ export class DashboardComponent implements OnInit {
 					  }
 				  }*/
 				if(data && Object.keys(data).length) {
-		        	this.jiraVsAppChart = this.AmCharts.makeChart("chartdiv2", this.gUtilities.getAppOrAssoVsJiraGraph(data, "apps"));
+		        	this.jiraVsAppChart = this.AmCharts.makeChart("chartdiv2", this.gUtilities.getAppOrAssoVsJiraGraph(data, "app"));
 		        }
 	    	},
 	    	error => {}
@@ -118,7 +118,7 @@ export class DashboardComponent implements OnInit {
 	    .subscribe(
 	    	data => {
 	    		if(data && Object.keys(data).length) {
-		        	this.jiraVsAssoChart = this.AmCharts.makeChart("chartdiv3", this.gUtilities.getAppOrAssoVsJiraGraph(data, "associates"));
+		        	this.jiraVsAssoChart = this.AmCharts.makeChart("chartdiv3", this.gUtilities.getAppOrAssoVsJiraGraph(data, "associate"));
 		        }
 	    	},
 	    	error => {}
@@ -268,7 +268,7 @@ export class DashboardComponent implements OnInit {
 			    .subscribe(
 			    	data => {
 			    		if(data && Object.keys(data).length) {
-				        	this.jiraVsAssoChart = this.AmCharts.makeChart("chartdiv3", this.gUtilities.getAppOrAssoVsJiraGraph(data, "associates"));
+				        	this.jiraVsAssoChart = this.AmCharts.makeChart("chartdiv3", this.gUtilities.getAppOrAssoVsJiraGraph(data, "associate"));
 				        }
 			    	},
 			    	error => {}
