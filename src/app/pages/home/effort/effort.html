@@ -1,0 +1,126 @@
+<ngb-tabset justify="justified">
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>Weekly Effort</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+        <form #effortForm="ngForm" (ngSubmit)="handleEffortFormSubmit(effortForm)" novalidate>
+          <div class="form-row">
+            <div class="form-group col-md-5">
+              <label class="col-form-label">Application <span class="text-danger">*</span></label>
+              <select class="form-control" required name="appId" [(ngModel)]="effort.appId">
+                <option value="">Select Application</option>
+                <option *ngFor="let appl of myApplications" [value]="appl.appId">{{appl.applicationName}}</option>
+              </select>
+            </div>
+            <div class="form-group col-md-5 ml-auto">
+              <label class="col-form-label">Week <span class="text-danger">*</span></label>
+              <select class="form-control" required name="weekId" [(ngModel)]="effort.weekId">
+                <option value="">Select Week</option>
+                <option *ngFor="let week of weeks" [value]="week.weekId">{{week.name}}</option>
+              </select>
+            </div>
+            <div class="form-group col-md-5">
+              <label class="col-form-label">Effort (No. of Hours) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" required name="noOfHours" [(ngModel)]="effort.noOfHours" min="0" />
+              <small class="form-text text-muted">Note that, once added this cannot be changed. Should be between 0-168</small>
+            </div>
+            <div class="form-group col-md-5 ml-auto">
+              <label class="col-form-label">Remarks</label>
+              <textarea class="form-control" name="remarks" [(ngModel)]="effort.remarks"></textarea>
+            </div>
+            <div class="form-group text-danger" *ngIf="isError">
+              {{errorMsg}}
+            </div>
+          </div>
+          <div class="text-right">
+            <br/>
+            <button type="submit" class="btn btn-primary" [disabled]="!effortForm.form.valid">Add</button>
+          </div>
+        </form>
+      </div>
+    </ng-template>
+  </ngb-tab>
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>JIRA Effort</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+        <form #jiraForm="ngForm" (ngSubmit)="handleJiraFormSubmit(jiraForm)" novalidate>
+          <div class="form-row">
+            <div class="form-group col-md-5">
+              <label class="col-form-label">Application <span class="text-danger">*</span></label>
+              <select class="form-control" required name="appId" [(ngModel)]="jira.appId">
+                <option value="">Select Application</option>
+                <option *ngFor="let appl of myApplications" [value]="appl.appId">{{appl.applicationName}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-5">
+              <label class="col-form-label">Month <span class="text-danger">*</span></label>
+              <select class="form-control" required name="month" [(ngModel)]="jira.month">
+                <option value="">Select Month</option>
+                <option *ngFor="let month of months" [value]="month.id">{{month.name}}</option>
+              </select>
+            </div>
+            <div class="form-group col-md-5 ml-auto">
+              <label class="col-form-label">Year <span class="text-danger">*</span></label>
+              <select class="form-control" required name="year" [(ngModel)]="jira.year">
+                <option value="">Select Year</option>
+                <option *ngFor="let year of years" [value]="year.id">{{year.id}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-5">
+              <label class="col-form-label">Total JIRA Tickets <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" required name="totalJiraTickets" [(ngModel)]="jira.totalJiraTickets"/>
+            </div>
+            <div class="form-group col-md-5 ml-auto">
+              <label class="col-form-label">Closed JIRA Tickets <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" required name="closedJiraTickets" [(ngModel)]="jira.closedJiraTickets"/>
+            </div>
+          </div>
+          <div class="form-group text-danger" *ngIf="isError">
+              {{errorMsg}}
+            </div>
+          <div class="text-right">
+            <br/>
+            <button type="submit" class="btn btn-primary" [disabled]="!jiraForm.form.valid">Add</button>
+          </div>
+        </form>
+      </div>
+    </ng-template>
+  </ngb-tab>
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>Note To Owner</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+        <form #noteForm="ngForm" (ngSubmit)="handleNoteFormSubmit(noteForm)" novalidate>
+          <div class="form-row">
+            <div class="form-group col-md-5">
+              <label class="col-form-label">Application <span class="text-danger">*</span></label>
+              <select class="form-control" required name="appId" [(ngModel)]="note.appId">
+                <option value="">Select Application</option>
+                <option *ngFor="let appl of myApplications" [value]="appl.appId">{{appl.applicationName}}</option>
+              </select>
+            </div>
+            <div class="form-group col-md-12">
+              <label class="col-form-label">Note To Owner () <span class="text-danger">*</span></label>
+              <textarea class="form-control" placeholder="Add note" required name="message" [(ngModel)]="note.message" rows="10"></textarea>
+            </div>
+            <div class="form-group text-danger" *ngIf="isError">
+              {{errorMsg}}
+            </div>
+          </div>
+          <div class="text-right">
+            <br/>
+            <button type="submit" class="btn btn-primary" [disabled]="!noteForm.form.valid">Send</button>
+          </div>
+        </form>
+      </div>
+    </ng-template>
+  </ngb-tab>
+</ngb-tabset>

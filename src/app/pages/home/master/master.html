@@ -1,0 +1,150 @@
+<ngb-tabset justify="justified">
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>Applications</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12 text-right">
+            <button class="btn btn-primary" (click)="openAppModal(application)">Add New</button>
+          </div>
+        </div>
+        <br/>
+        <table class="table table-striped" [mfData]="appsTableData" #mf="mfDataTable" [mfRowsOnPage]="5">
+              <thead class="thead-dark">
+                <tr>
+                    <th style="width: 35%">
+                        <mfDefaultSorter by="applicationName">Name</mfDefaultSorter>
+                    </th>
+                    <th style="width: 35%">
+                        <mfDefaultSorter by="description">Description</mfDefaultSorter>
+                    </th>
+                    <th style="width: 30%">
+                        <mfDefaultSorter by="ownerEmailId">Owner</mfDefaultSorter>
+                    </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of mf.data">
+                    <td>{{item.applicationName}}</td>
+                    <td>{{item.description}}</td>
+                    <td>{{item.ownerEmailId}}</td>
+                </tr>
+                <tr *ngIf="!appsTableData || (appsTableData && !appsTableData.length)">
+                  <td colspan="3" class="text-center">No applications added!</td>
+                </tr>
+              </tbody>
+              <tfoot>
+              <tr>
+                  <td colspan="4">
+                      <mfBootstrapPaginator [rowsOnPageSet]="[5,10,25]"></mfBootstrapPaginator>
+                  </td>
+              </tr>
+              </tfoot>
+          </table>
+      </div>
+    </ng-template>
+  </ngb-tab>
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>Assign Users</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+        <form #assignUserForm="ngForm" (ngSubmit)="handleAssignUserFormSubmit(assignUserForm)" novalidate>
+          <div class="form-row">
+            <div class="form-group col-md-5">
+              <label class="col-form-label">Application <span class="text-danger">*</span></label>
+              <select class="form-control" required name="appId" [(ngModel)]="app.appId">
+                <option value="">Select Application</option>
+                <option *ngFor="let appl of applications" [value]="appl.appId">{{appl.applicationName}}</option>
+              </select>
+            </div>
+            <div class="form-group col-md-5 ml-auto">
+              <label class="col-form-label">User <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" placeholder="Type to search" required name="user" [(ngModel)]="app.emailId" [ngbTypeahead]="fetchUser" [inputFormatter]="userNameFormatter" [resultTemplate]="userTemplate">
+              <small class="form-text text-muted">You can search by user's name & email.</small>
+            </div>
+          </div>
+          <div class="form-group text-danger" *ngIf="isError">
+            {{errorMsg}}
+          </div>
+          <div class="text-right">
+            <br/>
+            <button type="submit" class="btn btn-primary" [disabled]="!assignUserForm.form.valid">Assign</button>
+          </div>
+        </form>
+      </div>
+    </ng-template>
+  </ngb-tab>
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>Add Weeks</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+        <div class="form-row">
+          <div class="form-group col-md-12 col-xs-12">
+            <label class="col-form-label">Add Week</label>
+            <br/>
+            <ngb-datepicker #dp ngModel [displayMonths]="2" (ngModelChange)="onDateChange($event)" [navigation]="select" [dayTemplate]="t"></ngb-datepicker>
+            <ng-template #t let-date="date" let-focused="focused">
+              <span class="custom-day" [class.focused]="focused" [class.range]="isFrom(date) || isTo(date) || isInside(date) || isHovered(date)" [class.faded]="isHovered(date) || isInside(date)" (mouseenter)="hoveredDate = date" (mouseleave)="hoveredDate = null" [class.text-muted]="isLessThanToday(date)">
+                {{ date.day }}
+              </span>
+            </ng-template>
+          </div>
+          <span class="text-danger" [hidden]="!showWeekErrMsg">A week cannot have more than 7 days *</span>
+          <div class="form-group text-danger" *ngIf="isError">
+            {{errorMsg}}
+          </div>
+        </div>
+        <div class="text-right">
+          <br/>
+          <button type="button" class="btn btn-primary" [disabled]="!fromDate || !toDate" (click)="addWeek()">Add</button>
+        </div>
+      </div>
+    </ng-template>
+  </ngb-tab>
+  <ngb-tab>
+    <ng-template ngbTabTitle><b>Holidays</b></ng-template>
+    <ng-template ngbTabContent>
+      <br/>
+      <div class="container">
+      </div>
+    </ng-template>
+  </ngb-tab>
+</ngb-tabset>
+<ng-template #application let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Add New Application</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <form #newAppForm="ngForm" (ngSubmit)="handleNewAppFormSubmit(newAppForm)" novalidate>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Application Name <span class="text-danger">*</span></label>
+        <input type="text" name="applicationName" class="form-control" placeholder="Application Name" autofocus ngModel required>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" name="description" placeholder="Add Description (Optional)" rows="4" ngModel></textarea>
+      </div>
+      <div class="form-group">
+        <label>Owner <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" placeholder="Type to search" name="ownerEmailId" required ngModel [ngbTypeahead]="fetchUser" [inputFormatter]="userNameFormatter" [resultTemplate]="userTemplate">
+        <small class="form-text text-muted">You can search by user's name & email.</small>
+      </div>
+      <div class="form-group text-danger" *ngIf="isAppError">
+        {{appErrorMsg}}
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="submit" class="btn btn-primary" [disabled]="!newAppForm.form.valid">Done</button>
+      <button type="button" class="btn btn-secondary" (click)="c()">Cancel</button>
+    </div>
+  </form>
+</ng-template>
+<ng-template #userTemplate let-r="result" let-t="term">
+  {{r.name }} - {{r.emailId}}
+</ng-template>

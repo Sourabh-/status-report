@@ -1,0 +1,136 @@
+<div class="container-fluid">
+  <div class="row marTop20" *ngIf="isAdmin">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="col-md-12 col-sm-12 col-xs-12 text-right">
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-sm btn-primary" [ngClass]="{'active': !showSelf}" (click)="handleSwitchGraphs(false)">All</button>
+          <button type="button" class="btn btn-sm btn-primary" [ngClass]="{'active': showSelf}" (click)="handleSwitchGraphs(true)">Self</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+        <div class="row">
+          <div class="col-md-2 col-sm-4 col-xs-4 ml-auto">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.appVsEffort" (ngModelChange)="triggerFilter('appVsEffort', $event)">
+              <option value="1">2 Weeks</option>
+              <option value="2">2 Months</option>
+              <option value="3">3 Months</option>
+              <option value="6">6 Months</option>
+              <option value="12">1 Year</option>
+              <option value="60">5 Years</option>
+            </select>
+          </div>
+        </div>
+        <div id="chartdiv" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 1: Applications VS Effort</div>
+      </div>
+    </div>
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+      	<div class="row">
+          <div class="col-md-2 col-sm-4 col-xs-4 ml-auto">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.assoVsEffort" (ngModelChange)="triggerFilter('assoVsEffort', $event)">
+              <option value="1">2 Weeks</option>
+              <option value="2">2 Months</option>
+              <option value="3">3 Months</option>
+              <option value="6">6 Months</option>
+              <option value="12">1 Year</option>
+              <option value="60">5 Years</option>
+            </select>
+          </div>
+        </div>
+        <div id="chartdiv1" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 2: Associates VS Effort</div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+      	<div class="row">
+          <div class="col-md-2 col-sm-4 col-xs-4 ml-auto">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.appVsJira" (ngModelChange)="triggerFilter('appVsJira', $event)">
+              <option value="2">2 Month</option>
+              <option value="3">3 Months</option>
+              <option value="6">6 Months</option>
+              <option value="12">1 Year</option>
+              <option value="60">5 Years</option>
+            </select>
+          </div>
+        </div>
+        <div id="chartdiv2" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 3: Applications VS JIRA Count</div>
+      </div>
+    </div>
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+      	<div class="row">
+          <div class="col-md-2 col-sm-4 col-xs-4 ml-auto">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.assoVsJira" (ngModelChange)="triggerFilter('assoVsJira', $event)">
+              <option value="2">2 Month</option>
+              <option value="3">3 Months</option>
+              <option value="6">6 Months</option>
+              <option value="12">1 Year</option>
+              <option value="60">5 Years</option>
+            </select>
+          </div>
+        </div>
+        <div id="chartdiv3" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 4: Associates VS JIRA Count</div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+      	<div class="row">
+      	  <div class="col-md-4 col-sm-4 col-xs-4"></div>
+      	  <div class="col-md-4 col-sm-4 col-xs-4">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.appByNamePieChart" (ngModelChange)="triggerFilter('appByNamePieChart', $event)">
+              <option *ngFor="let appl of shownApplications" [value]="appl.applicationName">{{appl.applicationName}}</option>
+            </select>
+          </div>
+          <div class="col-md-4 col-sm-4 col-xs-4 ml-auto">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.appPieChart" (ngModelChange)="triggerFilter('appPieChart', $event)">
+              <option value="20">2 Weeks</option>
+              <option value="31">1 Month</option>
+              <option value="90">3 Months</option>
+              <option value="180">6 Months</option>
+              <option value="365">1 Year</option>
+              <option value="1825">5 Years</option>
+            </select>
+          </div>
+        </div>
+        <div id="chartdiv4" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 5: Application's Pie Chart</div>
+      </div>
+    </div>
+    <div class="col-md-6 col-sm-12 col-xs-12">
+      <div class="graphic-card">
+      	<div class="row">
+      	  <div class="col-md-4 col-sm-4 col-xs-4"></div>
+      	  <div class="col-md-4 col-sm-4 col-xs-4">
+            <select class="form-control filter-select" [disabled]="showSelf" *ngIf="isAdmin" [(ngModel)]="filterByDate.assoByNamePieChart" (ngModelChange)="triggerFilter('assoByNamePieChart', $event)">
+              <option *ngFor="let user of users" [value]="user.emailId">{{user.name}}</option>
+            </select>
+          </div>
+          <div class="col-md-4 col-sm-4 col-xs-4 ml-auto">
+            <select class="form-control filter-select" [(ngModel)]="filterByDate.assoPieChart" (ngModelChange)="triggerFilter('assoPieChart', $event)">
+              <option value="20">2 Weeks</option>
+              <option value="31">1 Month</option>
+              <option value="90">3 Months</option>
+              <option value="180">6 Months</option>
+              <option value="365">1 Year</option>
+              <option value="1825">5 Years</option>
+            </select>
+          </div>
+        </div>
+        <div id="chartdiv5" [style.width.%]="100" [style.height.px]="240"></div>
+        <div class="text-center small-font-size text-muted">Figure 6: Associate's Pie Chart</div>
+      </div>
+    </div>
+  </div>
+</div>

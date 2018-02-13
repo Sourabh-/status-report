@@ -1,0 +1,14 @@
+{
+	"mongo": {
+		"_comment": "mongodb://127.0.0.1:27017/Database",
+		"url": "mongodb://root:root@ds129706.mlab.com:29706/status-report"
+	},
+	"smtpEmail": {
+		"email": "utilizationapp@gmail.com",
+		"pass": "utilization123"
+	},
+	"server": {
+		"port": 5000,
+		"externalUrl": "http://localhost:5000"
+	}
+}
